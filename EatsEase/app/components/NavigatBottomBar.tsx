@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View, Image, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from 'react-native';
@@ -10,6 +10,28 @@ import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
+const CustomTabBarButton = ({ children, onPress }: { children: any; onPress?: (e: GestureResponderEvent) => void }) => (
+    <TouchableOpacity
+        style={{
+            top: -30,
+            justifyContent: 'center',
+            alignItems: 'center',
+            ...styles.shadow,
+        }}
+        onPress={onPress}
+    >
+        <View
+            style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: 'white',
+            }}
+        >
+            {children}
+        </View>
+    </TouchableOpacity>
+);
 const Tabs = () => {
     return (
             <Tab.Navigator
@@ -53,9 +75,18 @@ const Tabs = () => {
                     options={{
                         tabBarIcon: ({ focused }) => (
                             <View style={styles.iconContainer}>
-                                <Image source={require('../image/eatsease.png')} style={[styles.icon, { width: 26, height: 26 }]} />
-                                <Text style={styles.text}>Search</Text>
+                                <Image source={require('../image/eatsease.png')}
+                                resizeMode='contain'
+                                style={{
+                                    width: 90,
+                                    height: 90,
+                                    top: 5,
+                                }
+                                } />
                             </View>
+                        ),
+                        tabBarButton: (props) => (
+                            <CustomTabBarButton {...props} />
                         ),
                     }} 
                 />
@@ -77,7 +108,7 @@ const Tabs = () => {
 
 const styles = StyleSheet.create({
     text: {
-        fontSize: 20,
+        fontSize: 12,
         color: 'white',
         fontFamily: 'Jua Regular',
     },
