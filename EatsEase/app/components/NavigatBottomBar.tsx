@@ -62,10 +62,12 @@ const Tabs = () => {
                     component={HomeScreen} 
                     options={{
                         tabBarIcon: ({ focused }) => (
+                            <TouchableOpacity>
                             <View style={styles.iconContainer}>
                                 <Image source={require('../image/home.png')} style={[styles.icon, { width: 24, height: 24 }]} />
                                 <Text style={styles.text}>Home</Text>
                             </View>
+                            </TouchableOpacity>
                         ),
                     }} 
                 />
@@ -95,10 +97,12 @@ const Tabs = () => {
                     component={ProfileScreen} 
                     options={{
                         tabBarIcon: ({ focused }) => (
+                            <TouchableOpacity>
                             <View style={styles.iconContainer}>
                                 <Image source={require('../image/profile.png')} style={[styles.icon, { width: 28, height: 28 }]} />
                                 <Text style={styles.text}>Profile</Text>
                             </View>
+                            </TouchableOpacity>
                         ),
                     }} 
                 />
