@@ -1,10 +1,10 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Text } from 'react-native';
+import { Text } from 'react-native';
 
-import HomeScreen from '../screens/HomeScreen'
+import HomeScreen from '../screens/HomeScreen';
 import YourListsScreen from '../screens/YourListsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
@@ -12,70 +12,77 @@ const Tab = createBottomTabNavigator();
 
 const Tabs = () => {
     return (
-        <LinearGradient
-            colors={['#FFFFFF', '#FE665D', '#FE5266', '#FD3B71']} // Gradient colors
-            locations={[0, 0.44, 0.71, 1]} // Gradient stops
-            style={styles.gradientContainer}
-        >
             <Tab.Navigator
                 screenOptions={{
-                    tabBarShowLabel: false,
+                    headerShown: false,
+                    tabBarShowLabel: false, // This hides the label
                     tabBarStyle: {
                         position: 'absolute',
-                        bottom: 25,
-                        left: 20,
-                        right: 20,
-                        backgroundColor: 'transparent', // Set background to transparent
-                        borderRadius: 15,
+                        bottom: -10,
+                        left: 0,
+                        right: 0,
+                        borderRadius: 10,
                         height: 90,
                         ...styles.shadow,
                     },
+                    // Add gradient to the tab bar
+                    tabBarBackground: () => (
+                        <LinearGradient
+                            colors={['#FE665D', '#FE5266', '#FD3B71']}
+                            locations={[0.44, 0.71, 1]}
+                            style={styles.gradientBackground}
+                        />
+                    ),
                 }}
             >
                 <Tab.Screen 
-                    name="Home" 
+                    name="HomeScreen"
                     component={HomeScreen} 
                     options={{
                         tabBarIcon: ({ focused }) => (
                             <View style={styles.iconContainer}>
-                                {/* <Image source={require('')} /> */}
-                                <Text>Home</Text>
+                                <Image source={require('../image/home.png')} style={[styles.icon, { width: 24, height: 24 }]} />
+                                <Text style={styles.text}>Home</Text>
                             </View>
                         ),
                     }} 
                 />
                 <Tab.Screen 
-                    name="Search" 
+                    name="YourListsScreen"
                     component={YourListsScreen} 
                     options={{
                         tabBarIcon: ({ focused }) => (
                             <View style={styles.iconContainer}>
-                                {/* <Image source={require('')} /> */}
-                                <Text>Search</Text>
+                                <Image source={require('../image/eatsease.png')} style={[styles.icon, { width: 26, height: 26 }]} />
+                                <Text style={styles.text}>Search</Text>
                             </View>
                         ),
                     }} 
                 />
                 <Tab.Screen 
-                    name="Profile" 
+                    name="ProfileScreen" // Valid name for internal navigation
                     component={ProfileScreen} 
                     options={{
                         tabBarIcon: ({ focused }) => (
                             <View style={styles.iconContainer}>
-                                {/* <Image source={require('')} /> */}
-                                <Text>Profile</Text>
+                                <Image source={require('../image/profile.png')} style={[styles.icon, { width: 28, height: 28 }]} />
+                                <Text style={styles.text}>Profile</Text>
                             </View>
                         ),
                     }} 
                 />
             </Tab.Navigator>
-        </LinearGradient>
     );
 };
 
 const styles = StyleSheet.create({
+    text: {
+        fontSize: 20,
+        color: 'white',
+        fontFamily: 'Jua Regular',
+    },
     shadow: {
-        shadowColor: '#7F5DF0',
+        // shadowColor: '#7F5DF0',
         shadowOffset: {
             width: 0,
             height: 10,
@@ -87,10 +94,14 @@ const styles = StyleSheet.create({
     iconContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        top: 10,
+        top: -5,
     },
-    gradientContainer: {
+    icon: {
+        marginBottom: 4, 
+    },
+    gradientBackground: {
         flex: 1,
+        // borderRadius: 10,
     },
 });
 

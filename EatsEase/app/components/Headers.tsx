@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: 'bold',
+    fontFamily: 'Jua Regular',
     color: 'white',
     padding: 20,
     paddingTop: 40,
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 60,
     top: 45
-  }
+  },
 });
 
 export default Header;

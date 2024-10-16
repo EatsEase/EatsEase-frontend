@@ -7,7 +7,7 @@ import { NavigationContainer } from "@react-navigation/native";
 export default function ProfileScreen() {
   return (
     <View style={styles.container}>
-      <Text>Hellooooooo</Text>
+      <Text style={styles.text}>Profile</Text>
     </View>
   );
 }
@@ -16,5 +16,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff",
+    },
+    text: {
+      fontSize: 20,
+      color: 'black',
+      fontFamily: 'Jua Regular',
     },
 });
