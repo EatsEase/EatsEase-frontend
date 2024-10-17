@@ -6,10 +6,11 @@ import { StyleSheet, View } from 'react-native';
 import Header from './app/components/Headers';
 import Tabs from './app/components/NavigatBottomBar';
 import { NavigationContainer } from '@react-navigation/native';
+import SignupScreen from './app/screens/SignupScreen';
 
 const loadFonts = async () => {
   await Font.loadAsync({
-    'Jua Regular': require('./assets/fonts/Jua-Regular.ttf'), // Load your custom font
+    'Jua Regular': require('./assets/fonts/Jua-Regular.ttf'),
   });
 };
 
@@ -17,20 +18,21 @@ export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
-    loadFonts().then(() => setFontsLoaded(true)); // Load the fonts asynchronously
+    loadFonts().then(() => setFontsLoaded(true));
   }, []);
 
   if (!fontsLoaded) {
-    return <AppLoading />; // Show a loading screen until the font is loaded
+    return <AppLoading />;
   }
 
   return (
     <View style={styles.container}>
-      <Header title="EatsEase" />
+      <SignupScreen />
+      {/* <Header title="EatsEase" />
       <NavigationContainer>
         <Tabs />
       </NavigationContainer>
-      <StatusBar style="auto" />
+      <StatusBar style="auto" /> */}
     </View>
   );
 }

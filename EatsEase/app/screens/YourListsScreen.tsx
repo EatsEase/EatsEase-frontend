@@ -7,7 +7,7 @@ import { NavigationContainer } from "@react-navigation/native";
 export default function YourListsScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>List</Text>
+      <Text style={styles.text}>Your List Page</Text>
     </View>
   );
 }

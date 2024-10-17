@@ -7,7 +7,7 @@ import { NavigationContainer } from "@react-navigation/native";
 export default function ProfileScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Profile</Text>
+      <Text style={styles.text}>Profile Page</Text>
     </View>
   );
 }
