@@ -33,24 +33,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Jua Regular',
     color: 'white',
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 60,
     // on the left side of the header
     position: 'absolute',
     left: 0,
   },
   messageIcon: {
-    width: 30,
-    height: 30,
-    position: 'absolute',
-    right: 20,
-    top: 45
-  },
-  notificatioIcon: {
     width: 28,
     height: 28,
     position: 'absolute',
+    right: 20,
+    top: 60
+  },
+  notificatioIcon: {
+    width: 26,
+    height: 26,
+    position: 'absolute',
     right: 60,
-    top: 45
+    top: 60
   },
 });
 

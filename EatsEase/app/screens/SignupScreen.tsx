@@ -1,6 +1,7 @@
 import React from "react";
-import { StyleSheet, Text, View, Image} from "react-native";
+import { StyleSheet, Text, View, Image, TextInput} from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
+import Dropdown from "../components/DropDown";
 
 const SignupScreen = () => {
     return (
@@ -9,6 +10,7 @@ const SignupScreen = () => {
             locations={[0, 0.21, 0.48, 0.78, 1]}
             style={styles.container}
         >
+            {/* Header */}
             <View style={styles.header}>
                 <Image source={require('../../app/image/logo.png')}
                 resizeMode="contain" 
@@ -16,8 +18,18 @@ const SignupScreen = () => {
                 />
                 <Text style={styles.textH1}>EatsEase</Text>
             </View>
+
+            {/* Footer */}
             <View style={styles.footer}>
                 <Text style={styles.textH3}>Welcome</Text>
+                <View style={styles.form}>
+                    <TextInput placeholder="Enter your email" style={styles.input} />
+                    <TextInput placeholder="Enter your username" style={styles.input} />
+                    <TextInput placeholder="Enter your password" style={styles.input} />
+                    {/* drop down to select Gender */}
+                    <Dropdown />
+
+                </View>
             </View>
         </LinearGradient>
     );
@@ -28,15 +40,15 @@ export default SignupScreen;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 0.7,
+        flex: 1,
         backgroundColor: "black",
     },
     textH1: {
-        fontSize: 50,
+        fontSize: 60,
         color: 'white',
         fontFamily: 'Jua Regular',
         textAlign: 'center',
-        top: 20,
+        top: 15,
         left: 40,
     },
     textH3: {
@@ -51,8 +63,8 @@ const styles = StyleSheet.create({
         width: 90,
         height: 90,
         position: 'absolute',
-        left: 20,
-        top: 30,
+        left: 30,
+        top: 85,
     },
     header: {
         flex: 1,
@@ -61,11 +73,25 @@ const styles = StyleSheet.create({
         paddingBottom: 50,
     },
     footer: {
-        flex: 3,
+        flex: 4,
         backgroundColor: '#fff',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         paddingHorizontal: 20,
         paddingVertical: 30,
+        marginLeft: 10,
+        marginRight: 10,
+    },
+    form: {
+        marginTop: 20,
+        paddingHorizontal: 10,
+    },
+    input: {
+        fontFamily: 'Jua Regular',
+        fontSize: 20,
+        borderBottomWidth: 2,
+        borderBottomColor: '#d9d9d9',
+        padding: 5,
+        paddingTop: 30,
     },
 });

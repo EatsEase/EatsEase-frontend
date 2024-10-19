@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import * as Font from 'expo-font';
 import AppLoading from 'expo-app-loading';
 import { StatusBar } from 'expo-status-bar';
@@ -7,6 +7,8 @@ import Header from './app/components/Headers';
 import Tabs from './app/components/NavigatBottomBar';
 import { NavigationContainer } from '@react-navigation/native';
 import SignupScreen from './app/screens/SignupScreen';
+import { useState } from 'react';
+import { useEffect } from 'react';
 
 const loadFonts = async () => {
   await Font.loadAsync({
