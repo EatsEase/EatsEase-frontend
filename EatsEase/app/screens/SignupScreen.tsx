@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, Image, TextInput} from "react-native";
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import Dropdown from "../components/DropDown";
 
@@ -26,8 +26,23 @@ const SignupScreen = () => {
                     <TextInput placeholder="Enter your email" style={styles.input} />
                     <TextInput placeholder="Enter your username" style={styles.input} />
                     <TextInput placeholder="Enter your password" style={styles.input} />
-                    {/* drop down to select Gender */}
+                    {/* drop down to select Gender and BD */}
                     <Dropdown />
+
+                    {/* check box for Allow locations while using the app */}
+                    <View style={styles.checkboxView}>
+                        <TouchableOpacity style={styles.checkbox}>
+                            {/* <Image source={require('../../app/image/check.png')} style={{ height: 14, width: 14 }} /> */}
+                        </TouchableOpacity>
+                    <Text style={styles.checkboxText}>Allow locations while using the app</Text>
+                    </View>
+                    
+
+                    {/* Enter Button */}
+                    <TouchableOpacity style={styles.signupButton}>
+                        <Text style={styles.signupButtonText}>Enter</Text>
+                    </TouchableOpacity>
+
 
                 </View>
             </View>
@@ -48,8 +63,8 @@ const styles = StyleSheet.create({
         color: 'white',
         fontFamily: 'Jua Regular',
         textAlign: 'center',
-        top: 15,
-        left: 40,
+        top: 10,
+        paddingLeft: 100,
     },
     textH3: {
         fontSize: 30,
@@ -58,7 +73,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
 
     },
-    // logo on the left side of the header
     logo: {
         width: 90,
         height: 90,
@@ -69,7 +83,6 @@ const styles = StyleSheet.create({
     header: {
         flex: 1,
         justifyContent: 'flex-end',
-        paddingHorizontal: 20,
         paddingBottom: 50,
     },
     footer: {
@@ -93,5 +106,38 @@ const styles = StyleSheet.create({
         borderBottomColor: '#d9d9d9',
         padding: 5,
         paddingTop: 30,
+    },
+    checkbox: {
+        height: 22,
+        width: 22,
+        borderRadius: 2,
+        borderWidth: 2,
+        borderColor: 'gray',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    checkboxText: {
+        fontSize: 18,
+        fontFamily: 'Jua Regular',
+        marginLeft: 10,
+        color: 'gray'
+    },
+    checkboxView: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 30
+    },
+    signupButton: {
+        backgroundColor: '#5ECFA6',
+        paddingVertical: 15,
+        marginHorizontal: 80,
+        borderRadius: 30,
+        marginTop: 30,
+        alignItems: 'center',
+    },
+    signupButtonText: {
+        color: 'white',
+        fontSize: 20,
+        fontFamily: 'Jua Regular',
     },
 });
