@@ -1,9 +1,12 @@
 import React from "react";
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from "react-native";
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import Dropdown from "../components/DropDown";
+import { useNavigation } from '@react-navigation/native';
 
 const SignupScreen = () => {
+
+
     return (
         <LinearGradient
             colors={['#FD3B71', '#FE5266', '#FE665D', '#FE5266', '#FD3B71']}
@@ -13,8 +16,8 @@ const SignupScreen = () => {
             {/* Header */}
             <View style={styles.header}>
                 <Image source={require('../../app/image/logo.png')}
-                resizeMode="contain" 
-                style={styles.logo} 
+                    resizeMode="contain" 
+                    style={styles.logo} 
                 />
                 <Text style={styles.textH1}>EatsEase</Text>
             </View>
@@ -26,25 +29,27 @@ const SignupScreen = () => {
                     <TextInput placeholder="Enter your email" style={styles.input} />
                     <TextInput placeholder="Enter your username" style={styles.input} />
                     <TextInput placeholder="Enter your password" style={styles.input} />
-                    {/* drop down to select Gender and BD */}
+
+                    {/* drop down to select Gender and Birthdate */}
                     <Dropdown />
 
-                    {/* check box for Allow locations while using the app */}
+                    {/* Checkbox for location access */}
                     <View style={styles.checkboxView}>
                         <TouchableOpacity style={styles.checkbox}>
                             {/* <Image source={require('../../app/image/check.png')} style={{ height: 14, width: 14 }} /> */}
                         </TouchableOpacity>
-                    <Text style={styles.checkboxText}>Allow locations while using the app</Text>
+                        <Text style={styles.checkboxText}>Allow locations while using the app</Text>
                     </View>
-                    
+
                     {/* Enter Button */}
                     <TouchableOpacity style={styles.enterButton}>
                         <Text style={styles.enterButtonText}>Enter</Text>
                     </TouchableOpacity>
+                </View>
 
-                    {/* Button Container */}
-                    <View style={styles.buttonContainer}>
-                    {/* Login Button navigate to LoginScreen*/}
+                {/* Button Container at the Bottom */}
+                <View style={styles.buttonContainer}>
+                    {/* Login Button navigate to LoginScreen */}
                     <TouchableOpacity style={styles.loginButton}>
                         <Text style={styles.enterButtonText}>Login</Text>
                     </TouchableOpacity>
@@ -53,8 +58,6 @@ const SignupScreen = () => {
                     <TouchableOpacity style={styles.signUpButton}>
                         <Text style={styles.enterButtonText}>Sign up</Text>
                     </TouchableOpacity>
-                    </View>
-
                 </View>
             </View>
         </LinearGradient>
@@ -62,7 +65,6 @@ const SignupScreen = () => {
 }
 
 export default SignupScreen;
-
 
 const styles = StyleSheet.create({
     container: {
@@ -82,7 +84,6 @@ const styles = StyleSheet.create({
         color: 'black',
         fontFamily: 'Jua Regular',
         textAlign: 'center',
-
     },
     logo: {
         width: 90,
@@ -105,10 +106,12 @@ const styles = StyleSheet.create({
         paddingVertical: 30,
         marginLeft: 10,
         marginRight: 10,
+        justifyContent: 'space-between', // Ensures form and buttons are spaced well
     },
     form: {
         marginTop: 20,
         paddingHorizontal: 10,
+        flex: 1, // Take available space
     },
     input: {
         fontFamily: 'Jua Regular',
@@ -125,18 +128,18 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: 'gray',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     checkboxText: {
         fontSize: 18,
         fontFamily: 'Jua Regular',
         marginLeft: 10,
-        color: 'gray'
+        color: 'gray',
     },
     checkboxView: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 30
+        marginTop: 30,
     },
     enterButton: {
         backgroundColor: '#5ECFA6',
@@ -153,25 +156,22 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 30,
+        justifyContent: 'space-around',
+        paddingVertical: 20, // Padding for bottom alignment
+        marginBottom: 20, // Margin to align with the bottom
     },
     loginButton: {
         backgroundColor: '#FD3B71',
         paddingVertical: 15,
         paddingHorizontal: 40,
-        marginHorizontal: 20,
         borderRadius: 30,
-        marginTop: 30,
         alignItems: 'center',
     },
     signUpButton: {
         backgroundColor: '#FD3B71',
         paddingVertical: 15,
         paddingHorizontal: 30,
-        marginHorizontal: 20,
         borderRadius: 30,
-        marginTop: 30,
         alignItems: 'center',
     },
 });

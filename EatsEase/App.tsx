@@ -6,10 +6,14 @@ import { StyleSheet, View } from 'react-native';
 import Header from './app/components/Headers';
 import Tabs from './app/components/NavigatBottomBar';
 import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import SignupScreen from './app/screens/SignupScreen';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import FirstPreferences from './app/screens/FirstPreferencesScreen';
+import LoginScreen from './app/screens/LoginScreen';
+
+const Stack = createStackNavigator();
 
 const loadFonts = async () => {
   await Font.loadAsync({
@@ -30,8 +34,9 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {/* <SignupScreen /> */}
-      <FirstPreferences />
+      <SignupScreen />
+      {/* <FirstPreferences /> */}
+      {/* <LoginScreen /> */}
       {/* <Header title="EatsEase" />
       <NavigationContainer>
         <Tabs />
