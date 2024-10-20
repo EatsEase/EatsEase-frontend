@@ -37,12 +37,23 @@ const SignupScreen = () => {
                     <Text style={styles.checkboxText}>Allow locations while using the app</Text>
                     </View>
                     
-
                     {/* Enter Button */}
-                    <TouchableOpacity style={styles.signupButton}>
-                        <Text style={styles.signupButtonText}>Enter</Text>
+                    <TouchableOpacity style={styles.enterButton}>
+                        <Text style={styles.enterButtonText}>Enter</Text>
                     </TouchableOpacity>
 
+                    {/* Button Container */}
+                    <View style={styles.buttonContainer}>
+                    {/* Login Button navigate to LoginScreen*/}
+                    <TouchableOpacity style={styles.loginButton}>
+                        <Text style={styles.enterButtonText}>Login</Text>
+                    </TouchableOpacity>
+
+                    {/* Sign up button navigate to SignupScreen */}
+                    <TouchableOpacity style={styles.signUpButton}>
+                        <Text style={styles.enterButtonText}>Sign up</Text>
+                    </TouchableOpacity>
+                    </View>
 
                 </View>
             </View>
@@ -127,7 +138,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 30
     },
-    signupButton: {
+    enterButton: {
         backgroundColor: '#5ECFA6',
         paddingVertical: 15,
         marginHorizontal: 80,
@@ -135,9 +146,32 @@ const styles = StyleSheet.create({
         marginTop: 30,
         alignItems: 'center',
     },
-    signupButtonText: {
+    enterButtonText: {
         color: 'white',
         fontSize: 20,
         fontFamily: 'Jua Regular',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 30,
+    },
+    loginButton: {
+        backgroundColor: '#FD3B71',
+        paddingVertical: 15,
+        paddingHorizontal: 40,
+        marginHorizontal: 20,
+        borderRadius: 30,
+        marginTop: 30,
+        alignItems: 'center',
+    },
+    signUpButton: {
+        backgroundColor: '#FD3B71',
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        marginHorizontal: 20,
+        borderRadius: 30,
+        marginTop: 30,
+        alignItems: 'center',
     },
 });
