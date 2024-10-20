@@ -9,6 +9,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import SignupScreen from './app/screens/SignupScreen';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import FirstPreferences from './app/screens/FirstPreferencesScreen';
 
 const loadFonts = async () => {
   await Font.loadAsync({
@@ -29,7 +30,8 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <SignupScreen />
+      {/* <SignupScreen /> */}
+      <FirstPreferences />
       {/* <Header title="EatsEase" />
       <NavigationContainer>
         <Tabs />
