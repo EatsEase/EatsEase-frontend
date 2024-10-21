@@ -23,7 +23,7 @@ const Dropdown: React.FC = () => {
   const genderOptions: Option[] = [
     { label: 'Male', value: 'Male' },
     { label: 'Female', value: 'Female' },
-    { label: 'Undefined', value: 'Undefined' },
+    { label: 'Not specified', value: 'Not specified' },
   ];
 
   const birthDatePlaceholder: Option = {
