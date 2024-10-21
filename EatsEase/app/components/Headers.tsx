@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface HeaderProps {
   title: string;
@@ -14,8 +15,14 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       style={styles.header}
     >
       <Text style={styles.title}>{title}</Text>
-      <Image source={require('../../app/image/message.png')} style={styles.messageIcon} />
-      <Image source={require('../../app/image/notification.png')} style={styles.notificatioIcon} />
+      <View style={styles.iconContainer}>
+        <TouchableOpacity>
+          <Icon name="bell" size={30} color="white" style={styles.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Icon name="message" size={30} color="white" style={styles.icon} />
+        </TouchableOpacity>
+      </View>
     </LinearGradient>
   );
 };
@@ -26,31 +33,25 @@ const styles = StyleSheet.create({
     padding: 50,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',  // Ensure content aligns horizontally
   },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
     fontFamily: 'Jua Regular',
     color: 'white',
-    padding: 20,
-    paddingTop: 60,
-    // on the left side of the header
     position: 'absolute',
-    left: 0,
+    left: 20,  // Adjust this value for padding from the left
+    top: 60,   // Adjust to position properly in line with the icons
   },
-  messageIcon: {
-    width: 28,
-    height: 28,
+  iconContainer: {
     position: 'absolute',
-    right: 20,
-    top: 60
+    right: 20,  // Aligns both icons to the right
+    top: 60,    // Align with the title text
+    flexDirection: 'row', // Ensures icons are next to each other
   },
-  notificatioIcon: {
-    width: 26,
-    height: 26,
-    position: 'absolute',
-    right: 60,
-    top: 60
+  icon: {
+    marginLeft: 10,  // Add some spacing between the icons
   },
 });
 

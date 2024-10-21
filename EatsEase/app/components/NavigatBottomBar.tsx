@@ -3,6 +3,7 @@ import { StyleSheet, View, Image, TouchableOpacity, GestureResponderEvent } from
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import HomeScreen from '../screens/HomeScreen';
 import YourListsScreen from '../screens/YourListsScreen';
@@ -40,7 +41,7 @@ const Tabs = () => {
                     tabBarShowLabel: false, // This hides the label
                     tabBarStyle: {
                         position: 'absolute',
-                        bottom: -10,
+                        bottom: 0,
                         left: 0,
                         right: 0,
                         borderRadius: 10,
@@ -62,8 +63,8 @@ const Tabs = () => {
                     component={HomeScreen} 
                     options={{
                         tabBarIcon: ({ focused }) => (
-                            <View style={styles.iconContainer}>
-                                <Image source={require('../image/home.png')} style={[styles.icon, { width: 24, height: 24 }]} />
+                            <View style={styles.homeIconContainer}>
+                                <Icon name="home" size={34} color="white" style={styles.icon} />
                                 <Text style={styles.text}>Home</Text>
                             </View>
                         ),
@@ -95,7 +96,7 @@ const Tabs = () => {
                     component={ProfileScreen}
                     options={{
                         tabBarIcon: ({ focused }) => (
-                            <View style={styles.iconContainer}>
+                            <View style={styles.profileIconContainer}>
                                 <Image source={require('../image/profile.png')} style={[styles.icon, { width: 28, height: 28 }]} />
                                 <Text style={styles.text}>Profile</Text>
                             </View>
@@ -126,6 +127,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         top: -5,
+    },
+    homeIconContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        top: 5,
+    },
+    profileIconContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        top: 5,
     },
     icon: {
         marginBottom: 4, 

@@ -107,7 +107,7 @@ export default SwipeableCard;
 
 const styles = StyleSheet.create({
   cardStyle: {
-    width: '80%',
+    width: '85%',
     height: '85%',
     justifyContent: 'flex-end', // This will push the content to the bottom
     alignItems: 'center',

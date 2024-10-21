@@ -125,7 +125,7 @@ const HomeScreen: React.FC = () => {
 
       <View style={styles.iconContainer}>
           <Icon name="close-circle" size={42} color="#FE665D" />
-          <Icon name="gesture-swipe" size={50} color="gray" />
+          <Icon name="gesture-swipe" size={40} color="#d9d9d9" />
           <Icon name="cards-heart" size={40} color="#5ECFA6" />
         </View>
     </SafeAreaView>
