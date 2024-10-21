@@ -18,6 +18,9 @@ const Stack = createStackNavigator();
 const loadFonts = async () => {
   await Font.loadAsync({
     'Jua Regular': require('./assets/fonts/Jua-Regular.ttf'),
+    'Mali Bold': require('./assets/fonts/Mali-Bold.ttf'),
+    'Mali Regular': require('./assets/fonts/Mali-Regular.ttf'),
+    'Mali SemiBold': require('./assets/fonts/Mali-SemiBold.ttf'),
   });
 };
 
@@ -34,14 +37,14 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <SignupScreen />
+      {/* <SignupScreen /> */}
       {/* <FirstPreferences /> */}
       {/* <LoginScreen /> */}
-      {/* <Header title="EatsEase" />
+      <Header title="EatsEase" />
       <NavigationContainer>
         <Tabs />
       </NavigationContainer>
-      <StatusBar style="auto" /> */}
+      <StatusBar style="auto" />
     </View>
   );
 }
