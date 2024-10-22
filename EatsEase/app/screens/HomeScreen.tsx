@@ -3,6 +3,9 @@ import { SafeAreaView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import SwipeableCard from '../components/SwipeableCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import Header from '../components/Headers';
+import Tabs from '../components/NavigatBottomBar';
+import { NavigationContainer } from '@react-navigation/native';
 
 interface CardItem {
   id: string;
@@ -11,56 +14,16 @@ interface CardItem {
 }
 
 const DEMO_CONTENT: CardItem[] = [
-  {
-    id: '1',
-    menuTitle: 'hahahaha',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '2',
-    menuTitle: 'ข้าวผัดต้มยำทะเล',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '3',
-    menuTitle: 'ข้าวกะเพราหมูกรอบ + ไข่ดาว',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '4',
-    menuTitle: 'หมาล่าทั่ง',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '5',
-    menuTitle: 'ข้าวหน้าปลาไหล + ซุปมิโสะ',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '6',
-    menuTitle: 'ก๋วยเตี๋ยวเรือ',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '7',
-    menuTitle: 'ข้าวหน้าหมูกรอบ',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '8',
-    menuTitle: 'ข้าวหน้าเป็ด',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '9',
-    menuTitle: 'ข้าวหน้าไก่',
-    backgroundColor: '#d9d9d9',
-  },
-  {
-    id: '10',
-    menuTitle: 'ข้าวหน้าหมู',
-    backgroundColor: '#d9d9d9',
-  },
+  { id: '1', menuTitle: 'hahahaha', backgroundColor: '#d9d9d9' },
+  { id: '2', menuTitle: 'ข้าวผัดต้มยำทะเล', backgroundColor: '#d9d9d9' },
+  { id: '3', menuTitle: 'ข้าวกะเพราหมูกรอบ + ไข่ดาว', backgroundColor: '#d9d9d9' },
+  { id: '4', menuTitle: 'หมาล่าทั่ง', backgroundColor: '#d9d9d9' },
+  { id: '5', menuTitle: 'ข้าวหน้าปลาไหล + ซุปมิโสะ', backgroundColor: '#d9d9d9' },
+  { id: '6', menuTitle: 'ก๋วยเตี๋ยวเรือ', backgroundColor: '#d9d9d9' },
+  { id: '7', menuTitle: 'ข้าวหน้าหมูกรอบ', backgroundColor: '#d9d9d9' },
+  { id: '8', menuTitle: 'ข้าวหน้าเป็ด', backgroundColor: '#d9d9d9' },
+  { id: '9', menuTitle: 'ข้าวหน้าไก่', backgroundColor: '#d9d9d9' },
+  { id: '10', menuTitle: 'ข้าวหน้าหมู', backgroundColor: '#d9d9d9' },
 ].reverse();
 
 const HomeScreen: React.FC = () => {
@@ -68,6 +31,7 @@ const HomeScreen: React.FC = () => {
   const [selectedMenu, setSelectedMenu] = useState<CardItem[]>([]);
   const [nonSelectedMenu, setNonSelectedMenu] = useState<CardItem[]>([]);
   const [swipeDirection, setSwipeDirection] = useState<string>('');
+  const navigation = useNavigation();
 
   const removeCard = (id: string) => {
     const newArray = sampleCardArray.filter((item) => item.id !== id);
@@ -94,6 +58,7 @@ const HomeScreen: React.FC = () => {
     setSampleCardArray(shuffledCards);
   };
 
+
   // Function to handle swipe direction
   const handleSwipe = (direction: string, item: CardItem) => {
     if (direction === 'Right') {
@@ -103,15 +68,18 @@ const HomeScreen: React.FC = () => {
     }
 
     if (selectedMenu.length >= 4) {
-      // navigation.navigate('YourListScreen');
+      navigation.navigate('YourListScreen');
     }
   };
-  
+
   // get only the right swipe
   const rightSwipe = sampleCardArray.filter((item) => swipeDirection === 'Right');
 
+
   return (
+    // Add Header
     <SafeAreaView style={{ flex: 1 }}>
+
       <View style={styles.container}>
         {sampleCardArray.map((item) => (
           <SwipeableCard
@@ -124,10 +92,11 @@ const HomeScreen: React.FC = () => {
       </View>
 
       <View style={styles.iconContainer}>
-          <Icon name="close-circle" size={42} color="#FE665D" />
-          <Icon name="gesture-swipe" size={40} color="#d9d9d9" />
-          <Icon name="cards-heart" size={40} color="#5ECFA6" />
-        </View>
+        <Icon name="close-circle" size={42} color="#FE665D" />
+        <Icon name="gesture-swipe" size={40} color="#d9d9d9" />
+        <Icon name="cards-heart" size={40} color="#5ECFA6" />
+      </View>
+      {/* <Tabs /> */}
     </SafeAreaView>
   );
 };

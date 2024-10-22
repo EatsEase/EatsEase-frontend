@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 
 const categories = [
   "Fast Food", "Vegan", "Dessert", "BBQ", "Sushi",
@@ -19,11 +20,13 @@ const FirstPreferences = () => {
         );
     };
 
+    const navigation = useNavigation();
+
     const handleSubmit = () => {
         if (selectedCategories.length >= 3) {
             // Access the selected data here
             Alert.alert("Selected Categories", JSON.stringify(selectedCategories));
-            // Proceed with selectedCategories data
+            navigation.navigate('MainLayout'); 
         } else {
             Alert.alert("Error", "Please select at least 3 categories.");
         }
@@ -77,9 +80,14 @@ const FirstPreferences = () => {
 
                 {/* "Let's go" Button */}
                 <TouchableOpacity
-                    style={styles.enterButton}
+                    // Disable if less than 3 are selected and button color changes
+                    style={[
+                        styles.enterButton,
+                        selectedCategories.length < 3 && { backgroundColor: 'gray' }
+                    ]}
                     onPress={handleSubmit}
-                    disabled={selectedCategories.length < 3} // Disable if less than 3 are selected
+                    disabled={selectedCategories.length < 3}
+
                 >
                     <Text style={styles.enterButtonText}>Let's go</Text>
                 </TouchableOpacity>

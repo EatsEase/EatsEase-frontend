@@ -3,9 +3,14 @@ import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "reac
 import { LinearGradient } from 'expo-linear-gradient';
 import Dropdown from "../components/DropDown";
 import { useNavigation } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 
 const SignupScreen = () => {
+    const navigation = useNavigation();
 
+    const handleEnterPress = () => {
+      navigation.navigate('FirstPreferences');
+    };
 
     return (
         <LinearGradient
@@ -42,7 +47,7 @@ const SignupScreen = () => {
                     </View>
 
                     {/* Enter Button */}
-                    <TouchableOpacity style={styles.enterButton}>
+                    <TouchableOpacity style={styles.enterButton} onPress={handleEnterPress}>
                         <Text style={styles.enterButtonText}>Enter</Text>
                     </TouchableOpacity>
                 </View>

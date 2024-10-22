@@ -3,13 +3,12 @@ import * as Font from 'expo-font';
 import AppLoading from 'expo-app-loading';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
-import Header from './app/components/Headers';
-import Tabs from './app/components/NavigatBottomBar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useEffect, useState } from 'react';
+
+import MainLayout from './app/components/MainLayout';
 import SignupScreen from './app/screens/SignupScreen';
-import { useState } from 'react';
-import { useEffect } from 'react';
 import FirstPreferences from './app/screens/FirstPreferencesScreen';
 import LoginScreen from './app/screens/LoginScreen';
 
@@ -36,16 +35,32 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* <SignupScreen /> */}
-      {/* <FirstPreferences /> */}
-      {/* <LoginScreen /> */}
-      <Header title="EatsEase" />
       <NavigationContainer>
-        <Tabs />
+        <Stack.Navigator initialRouteName="Signup">
+          <Stack.Screen 
+            name="Signup" 
+            component={SignupScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="FirstPreferences" 
+            component={FirstPreferences} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="Login" 
+            component={LoginScreen} 
+            options={{ headerShown: false }} 
+          />
+          {/* Main app screens with Tabs and Header */}
+          <Stack.Screen 
+            name="MainLayout" 
+            component={MainLayout} 
+            options={{ headerShown: false }} 
+          />
+        </Stack.Navigator>
+        <StatusBar style="auto" />
       </NavigationContainer>
-      <StatusBar style="auto" />
-    </View>
   );
 }
 

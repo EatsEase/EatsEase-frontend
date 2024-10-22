@@ -30,13 +30,13 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
 const styles = StyleSheet.create({
   header: {
     backgroundColor: 'pink',
-    padding: 50,
+    padding: 55,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',  // Ensure content aligns horizontally
   },
   title: {
-    fontSize: 30,
+    fontSize: 36 ,
     fontWeight: 'bold',
     fontFamily: 'Jua Regular',
     color: 'white',
