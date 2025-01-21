@@ -4,7 +4,7 @@ import SwipeableCard from '../components/SwipeableCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../components/Headers';
-import Tabs from '../components/NavigatBottomBar';
+import Tabs from '../components/NavigateBottomBar';
 import { NavigationContainer } from '@react-navigation/native';
 
 interface CardItem {
@@ -96,10 +96,15 @@ const HomeScreen: React.FC = () => {
         <Icon name="gesture-swipe" size={40} color="#d9d9d9" />
         <Icon name="cards-heart" size={40} color="#5ECFA6" />
       </View>
-      {/* <Tabs /> */}
     </SafeAreaView>
   );
 };
+
+const App: React.FC = () => (
+  <NavigationContainer>
+    <Tabs />
+  </NavigationContainer>
+);
 
 export default HomeScreen;
 

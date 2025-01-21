@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Header from './Headers';
-import Tabs from './NavigatBottomBar';
+import Tabs from './NavigateBottomBar';
 
 const MainLayout = () => {
   return (

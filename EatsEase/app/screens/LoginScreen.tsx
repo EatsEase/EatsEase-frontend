@@ -1,8 +1,12 @@
 import React from "react";
 import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const LoginScreen = () => {
+
+    const navigation = useNavigation();
+
     return (
         <LinearGradient
             colors={['#FD3B71', '#FE5266', '#FE665D', '#FE5266', '#FD3B71']}
@@ -34,12 +38,14 @@ const LoginScreen = () => {
                 {/* Button Container at the Bottom */}
                 <View style={styles.buttonContainer}>
                     {/* Login Button navigate to LoginScreen */}
-                    <TouchableOpacity style={styles.loginButton}>
+                    <TouchableOpacity style={styles.loginButton}
+                        onPress={() => navigation.navigate('Login')}>
                         <Text style={styles.enterButtonText}>Login</Text>
                     </TouchableOpacity>
 
                     {/* Sign up button navigate to SignupScreen */}
-                    <TouchableOpacity style={styles.signUpButton}>
+                    <TouchableOpacity style={styles.signUpButton}
+                        onPress={() => navigation.navigate('Signup')}>
                         <Text style={styles.enterButtonText}>Sign up</Text>
                     </TouchableOpacity>
                 </View>

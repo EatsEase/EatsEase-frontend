@@ -11,6 +11,12 @@ import MainLayout from './app/components/MainLayout';
 import SignupScreen from './app/screens/SignupScreen';
 import FirstPreferences from './app/screens/FirstPreferencesScreen';
 import LoginScreen from './app/screens/LoginScreen';
+import PreferencesScreen from './app/screens/PreferencesScreen';
+import HomeScreen from './app/screens/HomeScreen';
+import ProfileScreen from './app/screens/ProfileScreen';
+import YourListScreen from './app/screens/YourListsScreen';
+import HistoryScreen from './app/screens/HistoryScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -22,6 +28,16 @@ const loadFonts = async () => {
     'Mali SemiBold': require('./assets/fonts/Mali-SemiBold.ttf'),
   });
 };
+
+function ProfileStack() {
+  return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="History" component={HistoryScreen} />
+      </Stack.Navigator>
+  );
+}
+
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -51,6 +67,16 @@ export default function App() {
             name="Login" 
             component={LoginScreen} 
             options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="Preferences"
+            component={PreferencesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen 
+            name="History"
+            component={HistoryScreen}
+            options={{ headerShown: false }}
           />
           {/* Main app screens with Tabs and Header */}
           <Stack.Screen 

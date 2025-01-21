@@ -55,12 +55,14 @@ const SignupScreen = () => {
                 {/* Button Container at the Bottom */}
                 <View style={styles.buttonContainer}>
                     {/* Login Button navigate to LoginScreen */}
-                    <TouchableOpacity style={styles.loginButton}>
+                    <TouchableOpacity style={styles.loginButton}
+                        onPress={() => navigation.navigate('Login')}>
                         <Text style={styles.enterButtonText}>Login</Text>
                     </TouchableOpacity>
 
                     {/* Sign up button navigate to SignupScreen */}
-                    <TouchableOpacity style={styles.signUpButton}>
+                    <TouchableOpacity style={styles.signUpButton}
+                        onPress={() => navigation.navigate('Signup')}>
                         <Text style={styles.enterButtonText}>Sign up</Text>
                     </TouchableOpacity>
                 </View>
