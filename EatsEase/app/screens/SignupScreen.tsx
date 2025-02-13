@@ -1,16 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import Dropdown from "../components/DropDown";
 import { useNavigation } from '@react-navigation/native';
-import { NavigationContainer } from '@react-navigation/native';
+import axiosInstance from '../services/axiosInstance';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignupScreen = () => {
     const navigation = useNavigation();
 
-    const handleEnterPress = () => {
-      navigation.navigate('FirstPreferences');
+    // State variables for form inputs and error
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [gender, setGender] = useState('');
+    const [birthdate, setBirthdate] = useState('');
+    const [error, setError] = useState('');
+
+    const handleSignup = async () => {
+        try {
+            const response = await axiosInstance.post('/signup', {
+                email,
+                username,
+                password,
+                gender,
+                birthdate,
+            });
+
+            console.log("Full response:", response.data);
+
+            // Save the token to AsyncStorage
+            if (response.data.token) {
+                await AsyncStorage.setItem('token', response.data.token);
+            }
+    
+            // Check if token is saved successfully
+            const savedToken = await AsyncStorage.getItem('token');
+            if (savedToken) {
+                console.log('Signup successful:', response.data);
+                navigation.navigate('FirstPreferences');
+            } else {
+                console.error('Token not saved');
+                navigation.navigate('FirstPreferences');
+            }
+    
+        } catch (err) {
+            // Handle errors
+            setError('Signup failed. Please try again.');
+            console.error('Signup error:', err);
+        }
     };
+    
 
     return (
         <LinearGradient
@@ -31,36 +71,48 @@ const SignupScreen = () => {
             <View style={styles.footer}>
                 <Text style={styles.textH3}>Welcome</Text>
                 <View style={styles.form}>
-                    <TextInput placeholder="Enter your email" style={styles.input} />
-                    <TextInput placeholder="Enter your username" style={styles.input} />
-                    <TextInput placeholder="Enter your password" style={styles.input} />
+                    {/* Form inputs */}
+                    <TextInput 
+                        placeholder="Enter your email" 
+                        style={styles.input} 
+                        value={email}
+                        onChangeText={setEmail} 
+                    />
+                    <TextInput 
+                        placeholder="Enter your username" 
+                        style={styles.input} 
+                        value={username}
+                        onChangeText={setUsername} 
+                    />
+                    <TextInput 
+                        placeholder="Enter your password" 
+                        style={styles.input} 
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword} 
+                    />
 
-                    {/* drop down to select Gender and Birthdate */}
+                    {/* Dropdown for Gender and Birthdate */}
                     <Dropdown />
 
-                    {/* Checkbox for location access */}
-                    <View style={styles.checkboxView}>
-                        <TouchableOpacity style={styles.checkbox}>
-                            {/* <Image source={require('../../app/image/check.png')} style={{ height: 14, width: 14 }} /> */}
-                        </TouchableOpacity>
-                        <Text style={styles.checkboxText}>Allow locations while using the app</Text>
-                    </View>
+                    {/* Error message */}
+                    {error ? <Text style={styles.error}>{error}</Text> : null}
 
-                    {/* Enter Button */}
-                    <TouchableOpacity style={styles.enterButton} onPress={handleEnterPress}>
+                    {/* Signup Button */}
+                    <TouchableOpacity style={styles.enterButton} onPress={handleSignup}>
                         <Text style={styles.enterButtonText}>Enter</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Button Container at the Bottom */}
                 <View style={styles.buttonContainer}>
-                    {/* Login Button navigate to LoginScreen */}
+                    {/* Login Button */}
                     <TouchableOpacity style={styles.loginButton}
                         onPress={() => navigation.navigate('Login')}>
                         <Text style={styles.enterButtonText}>Login</Text>
                     </TouchableOpacity>
 
-                    {/* Sign up button navigate to SignupScreen */}
+                    {/* Sign Up Button (Already on the screen, but just as a fallback) */}
                     <TouchableOpacity style={styles.signUpButton}
                         onPress={() => navigation.navigate('Signup')}>
                         <Text style={styles.enterButtonText}>Sign up</Text>
@@ -181,4 +233,9 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         alignItems: 'center',
     },
+    error: {
+        color: 'red',
+        marginTop: 10,
+        textAlign: 'center',
+    }
 });

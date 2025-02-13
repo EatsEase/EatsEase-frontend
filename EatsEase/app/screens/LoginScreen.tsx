@@ -1,11 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import axiosInstance from '../services/axiosInstance';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
-
     const navigation = useNavigation();
+
+    // State variables for managing form inputs and errors
+    const [emailOrUsername, setEmailOrUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const handleLogin = async () => {
+        try {
+            const response = await axiosInstance.post('/login', {
+                emailOrUsername,
+                password,
+            });
+    
+            // Save the token to AsyncStorage
+            if (response.data.token) {
+                await AsyncStorage.setItem('token', response.data.token);
+            }
+    
+            // Check if token is saved successfully
+            const savedToken = await AsyncStorage.getItem('token');
+            if (savedToken) {
+                console.log('Login successful:', response.data);
+                navigation.navigate('FirstPreferences'); // Navigate to preferences or home screen
+            } else {
+                console.error('Token not saved');
+            }
+    
+        } catch (err) {
+            // Handle login error
+            setError('Login failed. Please check your credentials and try again.');
+            console.error('Login error:', err);
+        }
+    };
+    
 
     return (
         <LinearGradient
@@ -26,11 +61,25 @@ const LoginScreen = () => {
             <View style={styles.footer}>
                 <Text style={styles.textH3}>Welcome</Text>
                 <View style={styles.form}>
-                    <TextInput placeholder="Enter your email or username" style={styles.input} />
-                    <TextInput placeholder="Enter your password" style={styles.input} />
+                    <TextInput 
+                        placeholder="Enter your email or username" 
+                        style={styles.input} 
+                        value={emailOrUsername}
+                        onChangeText={setEmailOrUsername} 
+                    />
+                    <TextInput 
+                        placeholder="Enter your password" 
+                        style={styles.input}
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword} 
+                    />
+
+                    {/* Error message */}
+                    {error ? <Text style={styles.error}>{error}</Text> : null}
 
                     {/* Enter Button */}
-                    <TouchableOpacity style={styles.enterButton}>
+                    <TouchableOpacity style={styles.enterButton} onPress={handleLogin}>
                         <Text style={styles.enterButtonText}>Enter</Text>
                     </TouchableOpacity>
                 </View>
@@ -144,4 +193,9 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         alignItems: 'center',
     },
+    error: {
+        color: 'red',
+        marginTop: 10,
+        textAlign: 'center',
+    }
 });

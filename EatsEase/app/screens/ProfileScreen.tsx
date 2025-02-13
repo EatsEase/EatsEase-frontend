@@ -4,10 +4,22 @@ import { useNavigation } from "@react-navigation/native";
 import Header from "../components/Headers";
 import Tabs from "../components/NavigateBottomBar";
 import { NavigationContainer } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function ProfileScreen() {
 
   const navigation = useNavigation();
+
+  const handleLogout = async () => {
+    try {
+        await AsyncStorage.removeItem('token'); // Remove token from AsyncStorage
+        console.log('Logged out successfully');
+        navigation.navigate('Login'); // Navigate to login screen
+    } catch (err) {
+        console.error('Error logging out', err);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -52,7 +64,7 @@ export default function ProfileScreen() {
       </View>
 
       {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Log out</Text>
       </TouchableOpacity>
     </View>

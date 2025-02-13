@@ -1,13 +1,18 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert } from "react-native";
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { MultipleSelectList } from 'react-native-dropdown-select-list'
 
 const categories = [
   "Fast Food", "Vegan", "Dessert", "BBQ", "Sushi",
   "Pizza", "Burgers", "Seafood", "Salad", "Beverages",
-  "Pasta", "Grill", "Breakfast", "Steak", "Chicken"
+  "Pasta", "Grill", "Breakfast", "Steak", "Chicken",
+  "Chinese", "Mexican", "Indian", "Thai", "Japanese",
+  "Korean", "Italian", "French", "German", "Greek",
+  "Spanish", "Turkish", "Middle Eastern", "African", "Caribbean",
 ];
+
 
 const FirstPreferences = () => {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -26,7 +31,7 @@ const FirstPreferences = () => {
         if (selectedCategories.length >= 3) {
             // Access the selected data here
             Alert.alert("Selected Categories", JSON.stringify(selectedCategories));
-            navigation.navigate('MainLayout'); 
+            navigation.navigate('AllergiesScreen'); 
         } else {
             Alert.alert("Error", "Please select at least 3 categories.");
         }
@@ -52,8 +57,8 @@ const FirstPreferences = () => {
                 <Text style={styles.textH3}>Welcome</Text>
                 <Text style={styles.textH5}>Select at least 3 categories</Text>
 
-                {/* Category Grid */}
-                <View style={styles.gridContainer}>
+                {/* Category Grid - wrapped in ScrollView */}
+                <ScrollView contentContainerStyle={styles.gridContainer}>
                     {categories.map((category, index) => (
                         <TouchableOpacity
                             key={index}
@@ -71,25 +76,18 @@ const FirstPreferences = () => {
                             </Text>
                         </TouchableOpacity>
                     ))}
-                </View>
+                </ScrollView>
 
-                {/* show selectedCategories */}
-                {/* <Text style={styles.textH5}>
-                    Selected Categories: {selectedCategories.join(", ")}
-                </Text> */}
-
-                {/* "Let's go" Button */}
+                {/* "Next" Button */}
                 <TouchableOpacity
-                    // Disable if less than 3 are selected and button color changes
                     style={[
                         styles.enterButton,
                         selectedCategories.length < 3 && { backgroundColor: 'gray' }
                     ]}
                     onPress={handleSubmit}
                     disabled={selectedCategories.length < 3}
-
                 >
-                    <Text style={styles.enterButtonText}>Let's go</Text>
+                    <Text style={styles.enterButtonText}>Next</Text>
                 </TouchableOpacity>
             </View>
         </LinearGradient>
@@ -151,6 +149,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         marginTop: 20,
+        paddingBottom: 20, // Optional, add padding at the bottom for smoother scrolling
     },
     categoryBox: {
         backgroundColor: '#d9d9d9',
@@ -164,7 +163,7 @@ const styles = StyleSheet.create({
         flexShrink: 1, // Allow shrinking for longer text
     },
     selectedCategoryBox: {
-        backgroundColor: '#FD3B71', // Highlight selected category
+        backgroundColor: '#FD3B71',
     },
     categoryText: {
         color: 'black',
@@ -172,7 +171,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     selectedCategoryText: {
-        color: 'white', // Change text color to white when selected
+        color: 'white',
     },
     enterButton: {
         backgroundColor: '#5ECFA6',

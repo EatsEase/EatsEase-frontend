@@ -11,19 +11,20 @@ interface CardItem {
   id: string;
   menuTitle: string;
   backgroundColor: string;
+  image?: any;
 }
 
 const DEMO_CONTENT: CardItem[] = [
-  { id: '1', menuTitle: 'hahahaha', backgroundColor: '#d9d9d9' },
-  { id: '2', menuTitle: 'ข้าวผัดต้มยำทะเล', backgroundColor: '#d9d9d9' },
-  { id: '3', menuTitle: 'ข้าวกะเพราหมูกรอบ + ไข่ดาว', backgroundColor: '#d9d9d9' },
-  { id: '4', menuTitle: 'หมาล่าทั่ง', backgroundColor: '#d9d9d9' },
-  { id: '5', menuTitle: 'ข้าวหน้าปลาไหล + ซุปมิโสะ', backgroundColor: '#d9d9d9' },
+  { id: '1', menuTitle: 'hahahaha', backgroundColor: '#d9B382' },
+  { id: '2', menuTitle: 'ข้าวผัดต้มยำทะเล', backgroundColor: '#d9B382'},
+  { id: '3', menuTitle: 'ข้าวกะเพราหมูกรอบ', backgroundColor: '#d9B382', image : require('../../app/image/food1.jpg') },
+  { id: '4', menuTitle: 'หมาล่าทั่ง', backgroundColor: '#d9B382' },
+  { id: '5', menuTitle: 'ข้าวหน้าปลาไหล + ซุปมิโสะ', backgroundColor: '#d9B382',},
   { id: '6', menuTitle: 'ก๋วยเตี๋ยวเรือ', backgroundColor: '#d9d9d9' },
-  { id: '7', menuTitle: 'ข้าวหน้าหมูกรอบ', backgroundColor: '#d9d9d9' },
-  { id: '8', menuTitle: 'ข้าวหน้าเป็ด', backgroundColor: '#d9d9d9' },
-  { id: '9', menuTitle: 'ข้าวหน้าไก่', backgroundColor: '#d9d9d9' },
-  { id: '10', menuTitle: 'ข้าวหน้าหมู', backgroundColor: '#d9d9d9' },
+  { id: '7', menuTitle: 'ข้าวหน้าหมูกรอบ', backgroundColor: '#d9d9d9'},
+  { id: '8', menuTitle: 'ข้าวหน้าเป็ด', backgroundColor: '#d9d9d9'},
+  { id: '9', menuTitle: 'ข้าวหน้าไก่', backgroundColor: '#d9d9d9'},
+  { id: '10', menuTitle: 'ข้าวหน้าหมู', backgroundColor: '#d9d9d9'},
 ].reverse();
 
 const HomeScreen: React.FC = () => {

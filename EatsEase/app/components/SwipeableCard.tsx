@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, Dimensions, Animated, PanResponder, GestureResponderEvent, PanResponderGestureState, View } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Import the icons library
+import { Image } from 'react-native';
+
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -8,6 +9,7 @@ interface CardItem {
   id: string;
   menuTitle: string;
   backgroundColor: string;
+  image?: any;
 }
 
 interface SwipeableCardProps {
@@ -94,7 +96,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedD
       ]}
     >
       <View style={styles.imageContainer}>
-        {/* Image */}
+        <Image source={item.image} style={styles.image} resizeMode="cover" />
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.cardTitleStyle}> {item.menuTitle} </Text>
@@ -119,7 +121,10 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
-    // Add image style here
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   textContainer: {
     width: '100%',
