@@ -31,7 +31,7 @@ export default function ProfileScreen() {
           source={require("../assets/profile_icon.png")} // Replace with your image path
         /> */}
         <Text style={styles.profileName}>thacwn</Text>
-        <Text style={styles.joinDate}>Join since 28 August 2024</Text>
+        <Text style={styles.joinDate}>เข้าร่วมตั้งแต่ 28 August 2024</Text>
       </View>
 
       {/* Details Section */}

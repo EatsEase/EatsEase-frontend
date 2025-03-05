@@ -59,16 +59,16 @@ const LoginScreen = () => {
 
             {/* Footer */}
             <View style={styles.footer}>
-                <Text style={styles.textH3}>Welcome</Text>
+                <Text style={styles.textH3}>ยินดีต้อนรับ</Text>
                 <View style={styles.form}>
                     <TextInput 
-                        placeholder="Enter your email or username" 
+                        placeholder="อีเมลหรือชื่อบัญชีผู้ใช้" 
                         style={styles.input} 
                         value={emailOrUsername}
                         onChangeText={setEmailOrUsername} 
                     />
                     <TextInput 
-                        placeholder="Enter your password" 
+                        placeholder="รหัสผ่าน" 
                         style={styles.input}
                         secureTextEntry
                         value={password}
@@ -80,7 +80,7 @@ const LoginScreen = () => {
 
                     {/* Enter Button */}
                     <TouchableOpacity style={styles.enterButton} onPress={handleLogin}>
-                        <Text style={styles.enterButtonText}>Enter</Text>
+                        <Text style={styles.enterButtonText}>เข้าสู่ระบบ</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -89,13 +89,13 @@ const LoginScreen = () => {
                     {/* Login Button navigate to LoginScreen */}
                     <TouchableOpacity style={styles.loginButton}
                         onPress={() => navigation.navigate('Login')}>
-                        <Text style={styles.enterButtonText}>Login</Text>
+                        <Text style={styles.enterButtonText}>เข้าสู่ระบบ</Text>
                     </TouchableOpacity>
 
                     {/* Sign up button navigate to SignupScreen */}
                     <TouchableOpacity style={styles.signUpButton}
                         onPress={() => navigation.navigate('Signup')}>
-                        <Text style={styles.enterButtonText}>Sign up</Text>
+                        <Text style={styles.enterButtonText}>ลงทะเบียน</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -121,8 +121,11 @@ const styles = StyleSheet.create({
     textH3: {
         fontSize: 30,
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
+        paddingTop: 0,
+        paddingBottom: 0,
+        height: 50,
     },
     logo: {
         width: 90,
@@ -148,17 +151,19 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between', // Ensures form and buttons are spaced well
     },
     form: {
-        marginTop: 20,
+        marginTop: 10,
         paddingHorizontal: 10,
         flex: 1, // Take available space
     },
     input: {
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         fontSize: 20,
         borderBottomWidth: 2,
         borderBottomColor: '#d9d9d9',
         padding: 5,
         paddingTop: 30,
+        paddingBottom: 0,
+        height: 60,
     },
     enterButton: {
         backgroundColor: '#5ECFA6',
@@ -171,7 +176,11 @@ const styles = StyleSheet.create({
     enterButtonText: {
         color: 'white',
         fontSize: 20,
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
+        paddingTop: 0,
+        paddingBottom: 0,
+        height: 30,
+        
     },
     buttonContainer: {
         flexDirection: 'row',

@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import axiosInstance from '../services/axiosInstance';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const SignupScreen = () => {
     const navigation = useNavigation();
 
@@ -16,40 +17,58 @@ const SignupScreen = () => {
     const [gender, setGender] = useState('');
     const [birthdate, setBirthdate] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSignup = async () => {
+        setError(''); // Reset error on each attempt
+        if (!email || !username || !password || !gender || !birthdate) {
+            setError('กรุณากรอกข้อมูลให้ครบถ้วน');
+            return;
+        }
+    
+        setLoading(true); // Start loading state
+    
         try {
-            const response = await axiosInstance.post('/signup', {
-                email,
-                username,
-                password,
-                gender,
-                birthdate,
+            const signupResponse = await axiosInstance.post('/signup', {
+                user_name: username,
+                user_email: email,
+                user_password: password,
             });
-
-            console.log("Full response:", response.data);
-
-            // Save the token to AsyncStorage
-            if (response.data.token) {
-                await AsyncStorage.setItem('token', response.data.token);
-            }
     
-            // Check if token is saved successfully
-            const savedToken = await AsyncStorage.getItem('token');
-            if (savedToken) {
-                console.log('Signup successful:', response.data);
-                navigation.navigate('FirstPreferences');
-            } else {
-                console.error('Token not saved');
-                navigation.navigate('FirstPreferences');
-            }
+            console.log("Signup response:", signupResponse.data);
     
+            if (signupResponse.data.token) {
+                const loginResponse = await axiosInstance.post('/login', {
+                    user_name: username,
+                    user_password: password,
+                });
+    
+                console.log("Login response:", loginResponse.data);
+    
+                if (loginResponse.data.token) {
+                    await AsyncStorage.setItem('token', loginResponse.data.token);
+    
+                    const savedToken = await AsyncStorage.getItem('token');
+                    if (savedToken) {
+                        console.log('Signup and login successful:', loginResponse.data);
+                        alert('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ');
+                        navigation.navigate('FirstPreferences'); // Navigate to next screen
+                    } else {
+                        setError('Token not saved');
+                        alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                    }
+                }
+            }
         } catch (err) {
-            // Handle errors
-            setError('Signup failed. Please try again.');
+            setError('เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่');
+            alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');
             console.error('Signup error:', err);
+        } finally {
+            setLoading(false); // Stop loading state
         }
     };
+    
+    
     
 
     return (
@@ -61,46 +80,56 @@ const SignupScreen = () => {
             {/* Header */}
             <View style={styles.header}>
                 <Image source={require('../../app/image/logo.png')}
-                    resizeMode="contain" 
-                    style={styles.logo} 
+                    resizeMode="contain"
+                    style={styles.logo}
                 />
                 <Text style={styles.textH1}>EatsEase</Text>
             </View>
 
             {/* Footer */}
             <View style={styles.footer}>
-                <Text style={styles.textH3}>Welcome</Text>
+                <Text style={styles.textH3}>ยินดีต้อนรับ</Text>
                 <View style={styles.form}>
                     {/* Form inputs */}
-                    <TextInput 
-                        placeholder="Enter your email" 
-                        style={styles.input} 
-                        value={email}
-                        onChangeText={setEmail} 
-                    />
-                    <TextInput 
-                        placeholder="Enter your username" 
-                        style={styles.input} 
-                        value={username}
-                        onChangeText={setUsername} 
-                    />
-                    <TextInput 
-                        placeholder="Enter your password" 
-                        style={styles.input} 
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword} 
-                    />
+                <TextInput 
+                    placeholder="อีเมล" 
+                    style={[styles.input, error && !email && styles.inputError]} 
+                    value={email}
+                    onChangeText={setEmail} 
+                />
+                {error && !email && <Text style={styles.error}>กรุณากรอกอีเมล</Text>}
+
+                <TextInput 
+                    placeholder="ชื่อบัญชี" 
+                    style={[styles.input, error && !username && styles.inputError]} 
+                    value={username}
+                    onChangeText={setUsername} 
+                />
+                {error && !username && <Text style={styles.error}>กรุณากรอกชื่อบัญชี</Text>}
+
+                <TextInput 
+                    placeholder="รหัสผ่าน" 
+                    style={[styles.input, error && !password && styles.inputError]} 
+                    secureTextEntry
+                    value={password}
+                    onChangeText={setPassword} 
+                />
+                {error && !password && <Text style={styles.error}>กรุณากรอกรหัสผ่าน</Text>}
 
                     {/* Dropdown for Gender and Birthdate */}
-                    <Dropdown />
+                    <Dropdown 
+                        selectedGender={gender} 
+                        setSelectedGender={setGender} 
+                        selectedBirthdate={birthdate} 
+                        setSelectedBirthdate={setBirthdate} 
+                    />
 
                     {/* Error message */}
                     {error ? <Text style={styles.error}>{error}</Text> : null}
 
                     {/* Signup Button */}
-                    <TouchableOpacity style={styles.enterButton} onPress={handleSignup}>
-                        <Text style={styles.enterButtonText}>Enter</Text>
+                    <TouchableOpacity style={styles.enterButton} onPress={handleSignup} disabled={loading}>
+                        <Text style={styles.enterButtonText}>{loading ? 'กำลังโหลด...' : 'ต่อไป'}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -109,13 +138,13 @@ const SignupScreen = () => {
                     {/* Login Button */}
                     <TouchableOpacity style={styles.loginButton}
                         onPress={() => navigation.navigate('Login')}>
-                        <Text style={styles.enterButtonText}>Login</Text>
+                        <Text style={styles.enterButtonText}>เข้าสู่ระบบ</Text>
                     </TouchableOpacity>
 
                     {/* Sign Up Button (Already on the screen, but just as a fallback) */}
                     <TouchableOpacity style={styles.signUpButton}
                         onPress={() => navigation.navigate('Signup')}>
-                        <Text style={styles.enterButtonText}>Sign up</Text>
+                        <Text style={styles.enterButtonText}>ลงทะเบียน</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -141,7 +170,7 @@ const styles = StyleSheet.create({
     textH3: {
         fontSize: 30,
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
     },
     logo: {
@@ -168,17 +197,26 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between', // Ensures form and buttons are spaced well
     },
     form: {
-        marginTop: 20,
+        marginTop: 5,
         paddingHorizontal: 10,
         flex: 1, // Take available space
     },
     input: {
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         fontSize: 20,
         borderBottomWidth: 2,
         borderBottomColor: '#d9d9d9',
         padding: 5,
         paddingTop: 30,
+        paddingBottom: 0,
+        height: 60,
+    },
+    inputError: {
+        fontFamily: 'Mali-Bold',
+        borderBottomColor: 'red',
+        borderBottomWidth: 1,
+        paddingTop: 10,
+        paddingBottom: 0,
     },
     checkbox: {
         height: 22,
@@ -191,7 +229,7 @@ const styles = StyleSheet.create({
     },
     checkboxText: {
         fontSize: 18,
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         marginLeft: 10,
         color: 'gray',
     },
@@ -211,7 +249,10 @@ const styles = StyleSheet.create({
     enterButtonText: {
         color: 'white',
         fontSize: 20,
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
+        paddingTop: 0,
+        paddingBottom: 0,
+        height: 25,
     },
     buttonContainer: {
         flexDirection: 'row',

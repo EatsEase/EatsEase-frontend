@@ -1,83 +1,43 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import MultiSelect from 'react-native-multi-selectbox'; // Correct import for multi-selectbox
-import { xorBy } from 'lodash';
 
-type Allergy = {
-    id: number;
-    name: string;
-};
-
-type SelectedAllergy = {
-    item: string;
-    id: string;
-};
-
-const allergies: Allergy[] = [
-    { id: 1, name: "Dairy" },
-    { id: 2, name: "Egg" },
-    { id: 3, name: "Gluten" },
-    { id: 4, name: "Peanut" },
-    { id: 5, name: "Sesame" },
-    { id: 6, name: "Shellfish" },
-    { id: 7, name: "Soy" },
-    { id: 8, name: "Tree Nut" },
-    { id: 9, name: "Wheat" },
-    { id: 10, name: "Fish" },
-    { id: 11, name: "Sulfite" },
-    { id: 12, name: "Molluscs" },
-    { id: 13, name: "Mustard" },
-    { id: 14, name: "Celery" },
-    { id: 15, name: "Lupin" },
-    { id: 16, name: "Crustaceans" },
-    { id: 17, name: "Soybean" },
-    { id: 18, name: "Coconut" },
-    { id: 19, name: "Corn" },
-    { id: 20, name: "Kiwi" },
-    { id: 21, name: "Milk" },
-    { id: 22, name: "Oat" },
-    { id: 23, name: "Pineapple" },
-    { id: 24, name: "Rice" },
-    { id: 25, name: "Strawberry" },
-    { id: 26, name: "Tomato" },
-    { id: 27, name: "Yeast" },
-    { id: 28, name: "Apple" },
-    { id: 29, name: "Banana" },
-    { id: 30, name: "Beef" },
-    { id: 31, name: "Carrot" },
-    { id: 32, name: "Chicken" },
-    { id: 33, name: "Chocolate" },
-    { id: 34, name: "Coffee" },
-    { id: 35, name: "Garlic" },
-    { id: 36, name: "Ginger" },
-    { id: 37, name: "Honey" },
-    { id: 38, name: "Lemon" },
-    { id: 39, name: "Mango" },
-    { id: 40, name: "Mushroom" },
-    { id: 41, name: "Orange" },
-    { id: 42, name: "Peach" },
-    { id: 43, name: "Pepper" },
-    { id: 44, name: "Pork" },
-    { id: 45, name: "Potato" },
-    { id: 46, name: "Sesame Seed" },
-    { id: 47, name: "Sunflower" },
-    { id: 48, name: "Vanilla" },
-    { id: 49, name: "Watermelon" },
-    { id: 50, name: "Zucchini" },
+const allergies = [
+  "Dairy", "Egg", "Gluten", "Peanut", "Sesame", "Shellfish", "Soy", "Tree Nut", 
+  "Wheat", "Fish", "Sulfite", "Molluscs", "Mustard", "Celery", "Lupin", "Crustaceans", 
+  "Soybean", "Coconut", "Corn", "Kiwi", "Milk", "Oat", "Pineapple", "Rice", "Strawberry", 
+  "Tomato", "Yeast", "Apple", "Banana", "Beef", "Carrot", "Chicken", "Chocolate", "Coffee", 
+  "Garlic", "Ginger", "Honey", "Lemon", "Mango", "Mushroom", "Orange", "Peach", "Pepper", 
+  "Pork", "Potato", "Sesame Seed", "Sunflower", "Vanilla", "Watermelon", "Zucchini"
 ];
 
 const AllergiesScreen = () => {
-    const [selectedAllergies, setSelectedAllergies] = useState<SelectedAllergy[]>([]);
+    const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+
+    const toggleAllergy = (allergy: string) => {
+        setSelectedAllergies(prevState => 
+            prevState.includes(allergy)
+                ? prevState.filter(item => item !== allergy) // Deselect if selected
+                : [...prevState, allergy] // Add if not selected
+        );
+    };
 
     const navigation = useNavigation();
 
-    // Transform allergies array to match the expected format
-    const transformedAllergies = allergies.map(allergy => ({
-        item: allergy.name, // 'item' represents the displayed name
-        id: allergy.id.toString(), // 'id' should be unique for each item
-    }));
+    const handleSubmit = () => {
+        // Show selected allergies (if any)
+        Alert.alert("Selected Allergies", JSON.stringify(selectedAllergies));
+        navigation.navigate('MainLayout'); // Navigate to MainLayout screen
+    };
+
+    const handleSkip = () => {
+        // Proceed to the next screen without selecting allergies
+        navigation.navigate('MainLayout'); // Navigate to MainLayout screen
+    };
+
+    const isSkipDisabled = selectedAllergies.length > 0; // Skip is disabled when any allergy is selected
+    const isNextDisabled = selectedAllergies.length === 0; // Next is disabled when no allergy is selected
 
     return (
         <LinearGradient
@@ -87,80 +47,62 @@ const AllergiesScreen = () => {
         >
             {/* Header */}
             <View style={styles.header}>
-                <Image source={require('../../app/image/logo.png')}
-                    resizeMode="contain"
-                    style={styles.logo} 
-                />
+                <Image source={require('../../app/image/logo.png')} resizeMode="contain" style={styles.logo} />
                 <Text style={styles.textH1}>EatsEase</Text>
             </View>
 
             {/* Footer */}
             <View style={styles.footer}>
-                <Text style={styles.textH3}>Welcome</Text>
+                <Text style={styles.textH3}>แพ้อาหารประเภทไหนมั้ย?</Text>
 
-                {/* Allergy Grid */}
-                <Text style={styles.textH5}>Do you have any allergies?</Text>
-                <View style={styles.allergiesContainer}>
-
-                    {/* MultiSelect for allergies */}
-                    <MultiSelect
-                        label="Allergies"
-                        options={transformedAllergies}
-                        selectedValues={selectedAllergies}
-                        onMultiSelect={onMultiSelect} // Handle multi-select
-                        onTapClose={onMultiSelect}  // Handle close of selected item
-                        isMulti
-                        fontFamily="Jua Regular"
-                        inputPlaceholder="Search for allergies"
-
-
-                    />
-                </View>
-
-                {/* Display selected allergies with a cross icon (X) */}
-                {/* <View style={styles.selectedAllergiesContainer}>
-                    {selectedAllergies.map((allergy, index) => (
-                        <View key={index} style={styles.selectedAllergyItem}>
-                            <Text style={styles.selectedAllergyText}>{allergy.item}</Text>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    // Handle removing the allergy item
-                                    setSelectedAllergies(selectedAllergies.filter(item => item.id !== allergy.id));
-                                }}
-                            >
-                                <Text style={{ color: 'red', fontSize: 20 }}>X</Text>
-                            </TouchableOpacity>
-                        </View>
+                {/* Allergy Grid - wrapped in ScrollView */}
+                <ScrollView contentContainerStyle={styles.gridContainer}>
+                    {allergies.map((allergy, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            style={[
+                                styles.categoryBox,
+                                selectedAllergies.includes(allergy) && styles.selectedCategoryBox
+                            ]}
+                            onPress={() => toggleAllergy(allergy)}
+                        >
+                            <Text style={[
+                                styles.categoryText,
+                                selectedAllergies.includes(allergy) && styles.selectedCategoryText
+                            ]}>
+                                {allergy}
+                            </Text>
+                        </TouchableOpacity>
                     ))}
-                </View> */}
-                
-                {/* Button Container */}
-                <View style={styles.buttonContainer}>
-                    {/* Next Button */}
-                    <TouchableOpacity
-                        style={styles.enterButton}
-                        onPress={() => navigation.navigate('MainLayout')}
-                    >
-                        <Text style={styles.enterButtonText}>Next</Text>
-                    </TouchableOpacity>
+                </ScrollView>
 
-                    {/* Skip Button */}
-                    <TouchableOpacity
-                        style={styles.enterButton}
-                        onPress={() => navigation.navigate('MainLayout')}
-                    >
-                        <Text style={styles.enterButtonText}>Skip</Text>
-                    </TouchableOpacity>
-                </View>
+                {/* "Next" Button */}
+                <TouchableOpacity
+                    style={[
+                        styles.enterButton,
+                        isNextDisabled && { backgroundColor: '#E6E6E6' } // Disabled when no allergies are selected
+                    ]}
+                    onPress={handleSubmit}
+                    disabled={isNextDisabled}
+                >
+                    <Text style={styles.enterButtonText}>Next</Text>
+                </TouchableOpacity>
+
+                {/* "Skip" Button */}
+                <TouchableOpacity
+                    style={[
+                        styles.skipButton,
+                        isSkipDisabled && { backgroundColor: '#E6E6E6' } // Disabled when allergies are selected
+                    ]}
+                    onPress={handleSkip}
+                    disabled={isSkipDisabled}
+                >
+                    <Text style={styles.skipButtonText}>Skip</Text>
+                </TouchableOpacity>
             </View>
         </LinearGradient>
     );
-
-    // Function to handle multi-select changes
-    function onMultiSelect(item: SelectedAllergy) {
-        setSelectedAllergies(xorBy(selectedAllergies, [item], 'id'));
-    }
-}
+};
 
 export default AllergiesScreen;
 
@@ -172,16 +114,19 @@ const styles = StyleSheet.create({
     textH1: {
         fontSize: 60,
         color: 'white',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
         top: 10,
         paddingLeft: 100,
     },
     textH3: {
-        fontSize: 30,
+        fontSize: 25,
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
+        paddingTop: 10,
+        paddingBottom: 0,
+        height: 50,
     },
     textH5: {
         fontSize: 16,
@@ -212,44 +157,57 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         marginRight: 10,
     },
-    allergiesContainer: {
-        flex: 1,
-        paddingHorizontal: 10,
-        paddingTop: 20,
-    },
-    selectedAllergiesContainer: {
+    gridContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        marginBottom: 10,
+        justifyContent: 'center',
+        marginTop: 20,
+        paddingBottom: 20, // Optional, add padding at the bottom for smoother scrolling
     },
-    selectedAllergyItem: {
-        backgroundColor: '#FD3B71',
-        borderRadius: 15,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
+    categoryBox: {
+        backgroundColor: '#d9d9d9',
+        padding: 15,
+        borderRadius: 10,
         margin: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexBasis: '28%', // Flexible width to adjust based on screen size
+        minWidth: 100, // Minimum width for long text
+        flexShrink: 1, // Allow shrinking for longer text
     },
-    selectedAllergyText: {
-        color: '#FFFFFF',
+    selectedCategoryBox: {
+        backgroundColor: '#FD3B71',
+    },
+    categoryText: {
+        color: 'black',
         fontFamily: 'Jua Regular',
-        fontSize: 14,
+        textAlign: 'center',
     },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingVertical: 20, // Padding for bottom alignment
-        marginBottom: 20, // Margin to align with the bottom
+    selectedCategoryText: {
+        color: 'white',
     },
     enterButton: {
         backgroundColor: '#5ECFA6',
         paddingVertical: 15,
-        paddingHorizontal: 40,
         borderRadius: 30,
+        marginTop: 30,
         alignItems: 'center',
     },
     enterButtonText: {
         color: 'white',
         fontSize: 20,
+        fontFamily: 'Jua Regular',
+    },
+    skipButton: {
+        backgroundColor: '#5ECFA6', // Default green
+        paddingVertical: 15,
+        borderRadius: 30,
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    skipButtonText: {
+        color: 'black',
+        fontSize: 16,
         fontFamily: 'Jua Regular',
     },
 });

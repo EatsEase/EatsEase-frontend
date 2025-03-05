@@ -1,21 +1,30 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { MultipleSelectList } from 'react-native-dropdown-select-list'
-
-const categories = [
-  "Fast Food", "Vegan", "Dessert", "BBQ", "Sushi",
-  "Pizza", "Burgers", "Seafood", "Salad", "Beverages",
-  "Pasta", "Grill", "Breakfast", "Steak", "Chicken",
-  "Chinese", "Mexican", "Indian", "Thai", "Japanese",
-  "Korean", "Italian", "French", "German", "Greek",
-  "Spanish", "Turkish", "Middle Eastern", "African", "Caribbean",
-];
-
+import axios from "axios";
 
 const FirstPreferences = () => {
+    const [categories, setCategories] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/category/all');
+                const categoryNames = response.data.map((item: { category_name: string }) => item.category_name);
+                setCategories(categoryNames);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                Alert.alert("Error", "Failed to fetch categories.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const toggleCategory = (category: string) => {
         setSelectedCategories(prevState => 
@@ -29,11 +38,10 @@ const FirstPreferences = () => {
 
     const handleSubmit = () => {
         if (selectedCategories.length >= 3) {
-            // Access the selected data here
             Alert.alert("Selected Categories", JSON.stringify(selectedCategories));
             navigation.navigate('AllergiesScreen'); 
         } else {
-            Alert.alert("Error", "Please select at least 3 categories.");
+            Alert.alert("Error", "Please select at least 3 food categories.");
         }
     };
 
@@ -54,29 +62,31 @@ const FirstPreferences = () => {
 
             {/* Footer */}
             <View style={styles.footer}>
-                <Text style={styles.textH3}>Welcome</Text>
-                <Text style={styles.textH5}>Select at least 3 categories</Text>
+                <Text style={styles.textH3}>เลือกอาหารที่ชอบอย่างน้อย 3 ประเภท</Text>
 
-                {/* Category Grid - wrapped in ScrollView */}
-                <ScrollView contentContainerStyle={styles.gridContainer}>
-                    {categories.map((category, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={[
-                                styles.categoryBox,
-                                selectedCategories.includes(category) && styles.selectedCategoryBox
-                            ]}
-                            onPress={() => toggleCategory(category)}
-                        >
-                            <Text style={[
-                                styles.categoryText,
-                                selectedCategories.includes(category) && styles.selectedCategoryText
-                            ]}>
-                                {category}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                {loading ? (
+                    <ActivityIndicator size="large" color="#FD3B71" />
+                ) : (
+                    <ScrollView contentContainerStyle={styles.gridContainer}>
+                        {categories.map((category, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={[
+                                    styles.categoryBox,
+                                    selectedCategories.includes(category) && styles.selectedCategoryBox
+                                ]}
+                                onPress={() => toggleCategory(category)}
+                            >
+                                <Text style={[
+                                    styles.categoryText,
+                                    selectedCategories.includes(category) && styles.selectedCategoryText
+                                ]}>
+                                    {category}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
 
                 {/* "Next" Button */}
                 <TouchableOpacity
@@ -87,7 +97,7 @@ const FirstPreferences = () => {
                     onPress={handleSubmit}
                     disabled={selectedCategories.length < 3}
                 >
-                    <Text style={styles.enterButtonText}>Next</Text>
+                    <Text style={styles.enterButtonText}>ต่อไป</Text>
                 </TouchableOpacity>
             </View>
         </LinearGradient>
@@ -110,17 +120,13 @@ const styles = StyleSheet.create({
         paddingLeft: 100,
     },
     textH3: {
-        fontSize: 30,
+        fontSize: 20,
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
-    },
-    textH5: {
-        fontSize: 16,
-        color: 'gray',
-        fontFamily: 'Jua Regular',
-        textAlign: 'center',
-        marginTop: 20,
+        paddingTop: 10,
+        paddingBottom: 40,
+        height: 20,
     },
     logo: {
         width: 90,
@@ -149,7 +155,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         marginTop: 20,
-        paddingBottom: 20, // Optional, add padding at the bottom for smoother scrolling
+        paddingBottom: 20,
     },
     categoryBox: {
         backgroundColor: '#d9d9d9',
@@ -159,16 +165,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         flexBasis: '28%', // Flexible width to adjust based on screen size
-        minWidth: 100, // Minimum width for long text
-        flexShrink: 1, // Allow shrinking for longer text
+        minWidth: 100,
+        flexShrink: 1,
     },
     selectedCategoryBox: {
         backgroundColor: '#FD3B71',
     },
     categoryText: {
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
+        paddingTop: 0,
+        paddingBottom: 0,
+        height: 20,
     },
     selectedCategoryText: {
         color: 'white',
@@ -183,6 +192,6 @@ const styles = StyleSheet.create({
     enterButtonText: {
         color: 'white',
         fontSize: 20,
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
     },
 });

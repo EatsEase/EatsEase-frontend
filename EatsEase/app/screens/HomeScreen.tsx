@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, View, Alert, ActivityIndicator } from 'react-native';
 import SwipeableCard from '../components/SwipeableCard';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-import Header from '../components/Headers';
-import Tabs from '../components/NavigateBottomBar';
-import { NavigationContainer } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { StackNavigationProp } from '@react-navigation/stack';
+import homeScreenData from '../services/homeScreenData';
 
 interface CardItem {
   id: string;
@@ -14,98 +13,84 @@ interface CardItem {
   image?: any;
 }
 
-const DEMO_CONTENT: CardItem[] = [
-  { id: '1', menuTitle: 'hahahaha', backgroundColor: '#d9B382' },
-  { id: '2', menuTitle: 'ข้าวผัดต้มยำทะเล', backgroundColor: '#d9B382'},
-  { id: '3', menuTitle: 'ข้าวกะเพราหมูกรอบ', backgroundColor: '#d9B382', image : require('../../app/image/food1.jpg') },
-  { id: '4', menuTitle: 'หมาล่าทั่ง', backgroundColor: '#d9B382' },
-  { id: '5', menuTitle: 'ข้าวหน้าปลาไหล + ซุปมิโสะ', backgroundColor: '#d9B382',},
-  { id: '6', menuTitle: 'ก๋วยเตี๋ยวเรือ', backgroundColor: '#d9d9d9' },
-  { id: '7', menuTitle: 'ข้าวหน้าหมูกรอบ', backgroundColor: '#d9d9d9'},
-  { id: '8', menuTitle: 'ข้าวหน้าเป็ด', backgroundColor: '#d9d9d9'},
-  { id: '9', menuTitle: 'ข้าวหน้าไก่', backgroundColor: '#d9d9d9'},
-  { id: '10', menuTitle: 'ข้าวหน้าหมู', backgroundColor: '#d9d9d9'},
-].reverse();
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'HomeScreen'>;
 
 const HomeScreen: React.FC = () => {
-  const [sampleCardArray, setSampleCardArray] = useState<CardItem[]>(DEMO_CONTENT);
-  const [selectedMenu, setSelectedMenu] = useState<CardItem[]>([]);
-  const [nonSelectedMenu, setNonSelectedMenu] = useState<CardItem[]>([]);
-  const [swipeDirection, setSwipeDirection] = useState<string>('');
-  const navigation = useNavigation();
-
-  const removeCard = (id: string) => {
-    const newArray = sampleCardArray.filter((item) => item.id !== id);
-    setSampleCardArray(newArray);
-    if (newArray.length === 0) {
-      // If no more cards, shuffle and reset
-      resetCards();
-    }
-  };
-
-  const lastSwipedDirection = (direction: string) => {
-    setSwipeDirection(direction);
-  };
-
-  const shuffleArray = (array: CardItem[]) => {
-    return array
-      .map((a) => ({ sort: Math.random(), value: a }))
-      .sort((a, b) => a.sort - b.sort)
-      .map((a) => a.value);
-  };
-
-  const resetCards = () => {
-    const shuffledCards = shuffleArray(DEMO_CONTENT);
-    setSampleCardArray(shuffledCards);
-  };
+  const [sampleCardArray, setSampleCardArray] = useState<CardItem[]>([]);
+  const [likedMenus, setLikedMenus] = useState<CardItem[]>([]);
+  const [dislikedMenus, setDislikedMenus] = useState<CardItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigation = useNavigation<HomeScreenNavigationProp>();
 
 
-  // Function to handle swipe direction
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await homeScreenData(); // Call API function
+      if (data) {
+        const transformedData: CardItem[] = data.map((item: any) => ({
+          id: item._id,
+          menuTitle: item.menu_name,
+          backgroundColor: '#d9B382', // Default color, you can modify logic
+        }));
+        setSampleCardArray(transformedData.reverse()); // Reverse order like DEMO_CONTENT
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
   const handleSwipe = (direction: string, item: CardItem) => {
     if (direction === 'Right') {
-      setSelectedMenu((prev) => [...prev, item]);
+      if (likedMenus.length < 5) {
+        setLikedMenus((prev) => [...prev, item]);
+        removeCard(item.id);
+      } else {
+        Alert.alert("Limit Reached", "You can only like up to 5 menus. Manage your list first!");
+        shakeCard(item.id);
+      }
     } else if (direction === 'Left') {
-      setNonSelectedMenu((prev) => [...prev, item]);
-    }
-
-    if (selectedMenu.length >= 4) {
-      navigation.navigate('YourListScreen');
+      setDislikedMenus((prev) => [...prev, item]);
+      removeCard(item.id);
     }
   };
 
-  // get only the right swipe
-  const rightSwipe = sampleCardArray.filter((item) => swipeDirection === 'Right');
+  const removeCard = (id: string) => {
+    setSampleCardArray((prev) => prev.filter((item) => item.id !== id));
+  };
 
+  const shakeCard = (id: string) => {
+    console.log(`Shaking card ${id}`);
+  };
 
   return (
-    // Add Header
     <SafeAreaView style={{ flex: 1 }}>
+      {loading ? (
+        <ActivityIndicator size="large" color="#5ECFA6" style={{ flex: 1, justifyContent: 'center' }} />
+      ) : (
+        <>
+          <View style={styles.container}>
+            {sampleCardArray.map((item) => (
+              <SwipeableCard
+                key={item.id}
+                item={item}
+                removeCard={() => handleSwipe('Right', item)}
+                swipedDirection={(dir) => handleSwipe(dir, item)}
+                // isShaking={likedMenus.length >= 5}
+              />
+            ))}
+          </View>
 
-      <View style={styles.container}>
-        {sampleCardArray.map((item) => (
-          <SwipeableCard
-            key={item.id}
-            item={item}
-            removeCard={() => removeCard(item.id)}
-            swipedDirection={lastSwipedDirection}
-          />
-        ))}
-      </View>
-
-      <View style={styles.iconContainer}>
-        <Icon name="close-circle" size={42} color="#FE665D" />
-        <Icon name="gesture-swipe" size={40} color="#d9d9d9" />
-        <Icon name="cards-heart" size={40} color="#5ECFA6" />
-      </View>
+          <View style={styles.iconContainer}>
+            <Icon name="close-circle" size={42} color="#FE665D" />
+            <Icon name="gesture-swipe" size={40} color="#d9d9d9" />
+            <Icon name="cards-heart" size={40} color="#5ECFA6" />
+          </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };
-
-const App: React.FC = () => (
-  <NavigationContainer>
-    <Tabs />
-  </NavigationContainer>
-);
 
 export default HomeScreen;
 
@@ -118,7 +103,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: -20, // Space between cards and icons
+    marginTop: -20,
     marginLeft: 60,
     marginRight: 60,
   },

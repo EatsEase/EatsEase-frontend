@@ -17,7 +17,9 @@ import HistoryScreen from './app/screens/HistoryScreen';
 import ProfileScreen from './app/screens/ProfileScreen';
 import AllergiesScreen from './app/screens/AllergiesScreen';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
+
+// const Stack = createStackNavigator();
 
 const loadFonts = async () => {
   await Font.loadAsync({

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -10,20 +10,30 @@ interface Option {
   value: string | null;
 }
 
-const Dropdown: React.FC = () => {
-  const [selectedGender, setSelectedGender] = useState<string | null>(null);
-  const [selectedBirthdate, setSelectedBirthdate] = useState<string | null>(null);
-  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+interface DropdownProps {
+  selectedGender: string;
+  setSelectedGender: React.Dispatch<React.SetStateAction<string>>;
+  selectedBirthdate: string;
+  setSelectedBirthdate: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const Dropdown: React.FC<DropdownProps> = ({
+  selectedGender,
+  setSelectedGender,
+  selectedBirthdate,
+  setSelectedBirthdate
+}) => {
+  const [isDatePickerVisible, setDatePickerVisible] = React.useState(false);
 
   const genderPlaceholder: Option = {
-    label: 'Gender',
-    value: null,
+    label: 'เพศ',
+    value: '', // Default value as an empty string
   };
 
   const genderOptions: Option[] = [
-    { label: 'Male', value: 'Male' },
-    { label: 'Female', value: 'Female' },
-    { label: 'Not specified', value: 'Not specified' },
+    { label: 'เพศชาย', value: 'Male' },
+    { label: 'เพศหญิง', value: 'Female' },
+    { label: 'ไม่ต้องการระบุ', value: 'Not specified' },
   ];
 
   const birthDatePlaceholder: Option = {
@@ -44,7 +54,6 @@ const Dropdown: React.FC = () => {
   const maxDate = new Date();
   // set maxDate to 13 years ago
   maxDate.setFullYear(maxDate.getFullYear() - 13);
-  
 
   return (
     <View style={styles.container}>
@@ -81,7 +90,7 @@ const Dropdown: React.FC = () => {
                   selectedBirthdate ? { color: 'black' } : { color: '#d9d9d9' },
                 ]}
               >
-                {selectedBirthdate || 'Select Birthdate'}
+                {selectedBirthdate || 'วัน/เดือน/ปีเกิด'}
               </Text>
             </View>
           <Icon name="calendar-today" size={24} color="gray" style={styles.iconContainer} />
@@ -119,23 +128,23 @@ const styles = StyleSheet.create({
   },
   inputUnderline: {
     fontSize: 20,
-    fontFamily: 'Jua Regular',
+    fontFamily: 'Mali-Bold',
     paddingVertical: 16,
     paddingHorizontal: 5,
     borderBottomWidth: 2,
     borderBottomColor: '#d9d9d9',
     paddingRight: 30,
-    height: 50,
+    height: 60,
     justifyContent: 'center',
   },
   iconContainer: {
     position: 'absolute',
     right: 10,
-    top: 10,
+    top: 20,
   },
   selectedText: {
     fontSize: 20,
-    fontFamily: 'Jua Regular',
+    fontFamily: 'Mali-Bold',
     color: '#d9d9d9',
     width: '100%',
   },

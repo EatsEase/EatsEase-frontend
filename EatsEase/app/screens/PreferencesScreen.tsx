@@ -53,7 +53,7 @@ export default function PreferencesScreen() {
 
       {/* Categories Section */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Categories (maximum 5)</Text>
+        <Text style={styles.sectionTitle}>ประเภทอาหาร (อย่างน้อย 3)</Text>
         <FlatList
           data={categories}
           numColumns={3}
@@ -82,7 +82,7 @@ export default function PreferencesScreen() {
 
       {/* Distance Section */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Distance (only 1)</Text>
+        <Text style={styles.sectionTitle}>ร้านอาหารใกล้ฉัน (สูงสุด 1)</Text>
         <View style={styles.distanceContainer}>
           {distances.map((distance) => (
             <TouchableOpacity
@@ -108,7 +108,7 @@ export default function PreferencesScreen() {
 
       {/* Price Section */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Price Range (only 1)</Text>
+        <Text style={styles.sectionTitle}>ช่วงราคาของร้านอาหาร (สูงสุด 1)</Text>
         <View style={styles.priceContainer}>
           {prices.map((price) => (
             <TouchableOpacity
