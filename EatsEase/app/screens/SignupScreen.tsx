@@ -67,9 +67,12 @@ const SignupScreen = () => {
             setLoading(false); // Stop loading state
         }
     };
-    
-    
-    
+
+    // Handle guest mode, bypassing the signup process
+    const handleGuestMode = () => {
+        // Navigate to the next screen without authentication
+        navigation.navigate('FirstPreferences');
+    };
 
     return (
         <LinearGradient
@@ -91,30 +94,30 @@ const SignupScreen = () => {
                 <Text style={styles.textH3}>ยินดีต้อนรับ</Text>
                 <View style={styles.form}>
                     {/* Form inputs */}
-                <TextInput 
-                    placeholder="อีเมล" 
-                    style={[styles.input, error && !email && styles.inputError]} 
-                    value={email}
-                    onChangeText={setEmail} 
-                />
-                {error && !email && <Text style={styles.error}>กรุณากรอกอีเมล</Text>}
+                    <TextInput 
+                        placeholder="อีเมล" 
+                        style={[styles.input, error && !email && styles.inputError]} 
+                        value={email}
+                        onChangeText={setEmail} 
+                    />
+                    {error && !email && <Text style={styles.error}>กรุณากรอกอีเมล</Text>}
 
-                <TextInput 
-                    placeholder="ชื่อบัญชี" 
-                    style={[styles.input, error && !username && styles.inputError]} 
-                    value={username}
-                    onChangeText={setUsername} 
-                />
-                {error && !username && <Text style={styles.error}>กรุณากรอกชื่อบัญชี</Text>}
+                    <TextInput 
+                        placeholder="ชื่อบัญชี" 
+                        style={[styles.input, error && !username && styles.inputError]} 
+                        value={username}
+                        onChangeText={setUsername} 
+                    />
+                    {error && !username && <Text style={styles.error}>กรุณากรอกชื่อบัญชี</Text>}
 
-                <TextInput 
-                    placeholder="รหัสผ่าน" 
-                    style={[styles.input, error && !password && styles.inputError]} 
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword} 
-                />
-                {error && !password && <Text style={styles.error}>กรุณากรอกรหัสผ่าน</Text>}
+                    <TextInput 
+                        placeholder="รหัสผ่าน" 
+                        style={[styles.input, error && !password && styles.inputError]} 
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword} 
+                    />
+                    {error && !password && <Text style={styles.error}>กรุณากรอกรหัสผ่าน</Text>}
 
                     {/* Dropdown for Gender and Birthdate */}
                     <Dropdown 
@@ -142,9 +145,14 @@ const SignupScreen = () => {
                     </TouchableOpacity>
 
                     {/* Sign Up Button (Already on the screen, but just as a fallback) */}
-                    <TouchableOpacity style={styles.signUpButton}
+                    {/* <TouchableOpacity style={styles.signUpButton}
                         onPress={() => navigation.navigate('Signup')}>
                         <Text style={styles.enterButtonText}>ลงทะเบียน</Text>
+                    </TouchableOpacity> */}
+
+                    {/* Guest Mode Button */}
+                    <TouchableOpacity style={styles.guestButton} onPress={handleGuestMode}>
+                        <Text style={styles.enterButtonText}>โหมดเยี่ยมชม</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -248,10 +256,10 @@ const styles = StyleSheet.create({
     },
     enterButtonText: {
         color: 'white',
-        fontSize: 20,
+        fontSize: 16,
         fontFamily: 'Mali-Bold',
-        paddingTop: 0,
-        paddingBottom: 0,
+        paddingTop: 5,
+        paddingBottom: 10,
         height: 25,
     },
     buttonContainer: {
@@ -268,6 +276,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     signUpButton: {
+        backgroundColor: '#FD3B71',
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        borderRadius: 30,
+        alignItems: 'center',
+    },
+    guestButton: {
         backgroundColor: '#FD3B71',
         paddingVertical: 15,
         paddingHorizontal: 30,

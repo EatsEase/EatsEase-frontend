@@ -42,18 +42,37 @@ const HomeScreen: React.FC = () => {
 
   const handleSwipe = (direction: string, item: CardItem) => {
     if (direction === 'Right') {
-      if (likedMenus.length < 5) {
-        setLikedMenus((prev) => [...prev, item]);
-        removeCard(item.id);
-      } else {
-        Alert.alert("Limit Reached", "You can only like up to 5 menus. Manage your list first!");
-        shakeCard(item.id);
+      console.log("Right");
+  
+      // Prevent swiping right more than 5 times
+      if (likedMenus.length >= 5) {
+        Alert.alert("Limit Reached", "You can only like up to 5 menus. Remove some before adding more.");
+        return;
       }
+  
+      setLikedMenus((prev) => {
+        const updatedLikedMenus = [...prev, item];
+  
+        if (updatedLikedMenus.length === 5) {
+          console.log("Navigating to YourListScreen");
+          navigation.navigate('YourListScreen', {
+            likedMenus: updatedLikedMenus,
+            setLikedMenus, // Pass setLikedMenus to update in YourListScreen
+          });
+        }
+  
+        return updatedLikedMenus;
+      });
+  
+      removeCard(item.id);
     } else if (direction === 'Left') {
+      console.log("Left");
       setDislikedMenus((prev) => [...prev, item]);
       removeCard(item.id);
     }
   };
+  
+
 
   const removeCard = (id: string) => {
     setSampleCardArray((prev) => prev.filter((item) => item.id !== id));
@@ -74,9 +93,8 @@ const HomeScreen: React.FC = () => {
               <SwipeableCard
                 key={item.id}
                 item={item}
-                removeCard={() => handleSwipe('Right', item)}
-                swipedDirection={(dir) => handleSwipe(dir, item)}
-                // isShaking={likedMenus.length >= 5}
+                removeCard={() => removeCard(item.id)} // Now it only removes the card
+                swipedDirection={(dir) => handleSwipe(dir, item)} // Correctly passes the direction
               />
             ))}
           </View>

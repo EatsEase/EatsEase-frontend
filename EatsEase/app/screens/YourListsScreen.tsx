@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 
 interface CardItem {
   id: string;
@@ -9,69 +9,89 @@ interface CardItem {
   imageUrl: string;
 }
 
-const initialSelectedMenus: CardItem[] = [
-  { id: '1', menuTitle: 'hahahaha', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '2', menuTitle: 'ข้าวผัดต้มยำทะเล', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '3', menuTitle: 'ข้าวกะเพราหมูกรอบ + ไข่ดาว', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '4', menuTitle: 'หมาล่าทั่ง', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '5', menuTitle: 'ข้าวหน้าปลาไหล + ซุปมิโสะ', imageUrl: 'https://via.placeholder.com/150' },
-];
-
+type YourListScreenRouteProp = RouteProp<{ params: { likedMenus?: CardItem[], setLikedMenus?: React.Dispatch<React.SetStateAction<CardItem[]>> } }, 'params'>;
 
 const YourListScreen: React.FC = () => {
+  const route = useRoute<YourListScreenRouteProp>();
+  const navigation = useNavigation();
+
+  const likedMenus = route.params?.likedMenus ?? [];
+  const setLikedMenus = route.params?.setLikedMenus ?? (() => {}); // Prevents undefined errors
+
+  const [menus, setMenus] = useState<CardItem[]>(likedMenus);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
-  const [menus, setMenus] = useState<CardItem[]>(initialSelectedMenus);
+
+  useEffect(() => {
+    setMenus(likedMenus); // Sync state when navigating
+  }, [likedMenus]);
 
   const handleCardPress = (id: string) => {
     setSelectedCard(id);
   };
 
   const handleRemove = (id: string) => {
-    setMenus(prevMenus => prevMenus.filter(menu => menu.id !== id));
+    const updatedMenus = menus.filter(menu => menu.id !== id);
+    setMenus(updatedMenus);
+    setLikedMenus(updatedMenus); // ✅ Update HomeScreen's state
+
     if (selectedCard === id) {
       setSelectedCard(null);
+    }
+
+    // If user removes all menus, navigate back to HomeScreen to swipe for new ones
+    if (updatedMenus.length === 0) {
+      setTimeout(() => {
+        navigation.navigate('HomeScreen');
+      }, 500);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Select 1 menu</Text>
+
       <View style={styles.gridContainer}>
-        {menus.map((item) => ( // Change from selectedMenus to menus
-          <TouchableOpacity
-            key={item.id}
-            style={[
-              styles.card,
-              selectedCard === item.id && styles.selectedCard, // Highlight selected card
-            ]}
-            onPress={() => handleCardPress(item.id)}
-          >
-            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-            <Text style={styles.cardTitle}>{item.menuTitle}</Text>
-            <TouchableOpacity style={styles.removeIcon} onPress={() => handleRemove(item.id)}>
-              <Icon name="minus-circle" size={25} color="red" />
+        {menus.length > 0 ? (
+          menus.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.card,
+                selectedCard === item.id && styles.selectedCard,
+              ]}
+              onPress={() => handleCardPress(item.id)}
+            >
+              <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+              <Text style={styles.cardTitle}>{item.menuTitle}</Text>
+              <TouchableOpacity style={styles.removeIcon} onPress={() => handleRemove(item.id)}>
+                <Icon name="minus-circle" size={25} color="red" />
+              </TouchableOpacity>
             </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+          ))
+        ) : (
+          <Text style={styles.emptyMessage}>No menus selected. Returning to HomeScreen...</Text>
+        )}
       </View>
 
-        {/* Next Button */}
+      {menus.length > 0 && (
         <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.nextButton,
-            !selectedCard && styles.disabledButton, // Apply disabled style if no card is selected
-          ]}
-          disabled={!selectedCard}
+          <TouchableOpacity
+            style={[
+              styles.nextButton,
+              !selectedCard && styles.disabledButton,
+            ]}
+            disabled={!selectedCard}
           >
-          <Text style={styles.nextButtonText}>Next</Text>
-        </TouchableOpacity>
-      </View>
+            <Text style={styles.nextButtonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
 
 export default YourListScreen;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -104,7 +124,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent', // No border by default
   },
   selectedCard: {
-    borderColor: '#5ECFA6', // Change to your desired border color for selection
+    borderColor: '#5ECFA6', // Highlight color for selected card
   },
   cardImage: {
     width: '100%',
@@ -121,6 +141,12 @@ const styles = StyleSheet.create({
     top: 5,
     right: 5,
   },
+  emptyMessage: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: 'gray',
+    marginTop: 20,
+  },
   buttonContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -132,10 +158,10 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingVertical: 10,
     paddingHorizontal: 30,
-    alignSelf: 'center', // Center it horizontally
+    alignSelf: 'center',
   },
   disabledButton: {
-    backgroundColor: 'gray', // Gray color for the disabled state
+    backgroundColor: 'gray', // Gray color for disabled state
   },
   nextButtonText: {
     fontSize: 20,
@@ -143,4 +169,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Mali SemiBold',
   },
 });
-

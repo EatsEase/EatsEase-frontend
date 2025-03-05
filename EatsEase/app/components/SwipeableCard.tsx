@@ -32,25 +32,30 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedD
     onMoveShouldSetPanResponder: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => true,
     onPanResponderMove: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => {
       xPosition.setValue(gestureState.dx);
-      if (gestureState.dx > SCREEN_WIDTH - 250) {
+  
+    // Reset direction before determining new one
+    swipeDirection = '';
+
+      if (gestureState.dx > 50) {
         swipeDirection = 'Right';
-      } else if (gestureState.dx < -SCREEN_WIDTH + 250) {
+      } else if (gestureState.dx < -50) {
         swipeDirection = 'Left';
       }
     },
     onPanResponderRelease: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      if (gestureState.dx < SCREEN_WIDTH - 150 && gestureState.dx > -SCREEN_WIDTH + 150) {
-        swipedDirection('--');
+      if (gestureState.dx < 50 && gestureState.dx > -50) {
+        // Not swiped far enough, reset position
         Animated.spring(xPosition, {
           toValue: 0,
           speed: 5,
           bounciness: 10,
           useNativeDriver: false,
         }).start();
-      } else if (gestureState.dx > SCREEN_WIDTH - 150) {
+      } else {
+        // Ensure we only call swipedDirection once
         Animated.parallel([
           Animated.timing(xPosition, {
-            toValue: SCREEN_WIDTH,
+            toValue: swipeDirection === 'Right' ? SCREEN_WIDTH : -SCREEN_WIDTH,
             duration: 200,
             useNativeDriver: false,
           }),
@@ -60,28 +65,16 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedD
             useNativeDriver: false,
           }),
         ]).start(() => {
-          swipedDirection(swipeDirection);
-          removeCard();
-        });
-      } else if (gestureState.dx < -SCREEN_WIDTH + 150) {
-        Animated.parallel([
-          Animated.timing(xPosition, {
-            toValue: -SCREEN_WIDTH,
-            duration: 200,
-            useNativeDriver: false,
-          }),
-          Animated.timing(cardOpacity, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: false,
-          }),
-        ]).start(() => {
-          swipedDirection(swipeDirection);
+          if (swipeDirection) {
+            console.log(`Swiped ${swipeDirection}`); // Debugging log
+            swipedDirection(swipeDirection);
+          }
           removeCard();
         });
       }
     },
-  });
+  });    
+  
 
   return (
     <Animated.View

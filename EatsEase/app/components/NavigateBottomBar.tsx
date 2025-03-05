@@ -72,7 +72,7 @@ const Tabs = () => {
                     }} 
                 />
                 <Tab.Screen 
-                    name="YourListsScreen"
+                    name="YourListScreen"
                     component={YourListsScreen} 
                     options={{
                         tabBarIcon: ({ focused }) => (
