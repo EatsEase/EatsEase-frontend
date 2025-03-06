@@ -6,19 +6,18 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface HeaderProps {
   title: string;
 }
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
-  const [isNotificationVisible, setNotificationVisible] = useState(false);
-  const [isMessageVisible, setMessageVisible] = useState(false);
+  const [isAIModalVisible, setAIModalVisible] = useState(false);
 
   return (
     <>
@@ -29,53 +28,27 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         style={styles.header}
       >
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.iconContainer}>
-          {/* Bell Icon */}
-          <TouchableOpacity onPress={() => setNotificationVisible(true)}>
-            <Icon name="bell" size={30} color="white" style={styles.icon} />
-          </TouchableOpacity>
-          {/* Message Icon */}
-          <TouchableOpacity onPress={() => setMessageVisible(true)}>
-            <Icon name="message" size={30} color="white" style={styles.icon} />
-          </TouchableOpacity>
-        </View>
+        
+        {/* AI Feature Icon */}
+        <TouchableOpacity onPress={() => setAIModalVisible(true)} style={styles.aiIconContainer}>
+          <Image source={require('../../app/image/bot.png')} style={styles.aiIcon} />
+        </TouchableOpacity>
       </LinearGradient>
 
-      {/* Notification Modal */}
+      {/* AI Feature Modal */}
       <Modal
-        visible={isNotificationVisible}
+        visible={isAIModalVisible}
         transparent={true}
         animationType="slide"
-        onRequestClose={() => setNotificationVisible(false)}
+        onRequestClose={() => setAIModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Notifications</Text>
-            <Text style={styles.modalText}>Here are your notifications...</Text>
+            <Text style={styles.modalTitle}>AI Feature</Text>
+            <Text style={styles.modalText}>This is your AI assistant feature.</Text>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setNotificationVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Message Modal */}
-      <Modal
-        visible={isMessageVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setMessageVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Messages</Text>
-            <Text style={styles.modalText}>Here are your messages...</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setMessageVisible(false)}
+              onPress={() => setAIModalVisible(false)}
             >
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>
@@ -91,7 +64,7 @@ const styles = StyleSheet.create({
     padding: 55,
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row', // Ensure content aligns horizontally
+    flexDirection: 'row',
   },
   title: {
     fontSize: 36,
@@ -99,24 +72,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Jua Regular',
     color: 'white',
     position: 'absolute',
-    left: 20, // Adjust this value for padding from the left
-    top: 60, // Adjust to position properly in line with the icons
+    left: 20,
+    top: 60,
   },
-  iconContainer: {
+  aiIconContainer: {
     position: 'absolute',
-    right: 20, // Aligns both icons to the right
-    top: 60, // Align with the title text
-    flexDirection: 'row', // Ensures icons are next to each other
+    right: 20,
+    top: 60,
   },
-  icon: {
-    marginLeft: 10, // Add some spacing between the icons
+  aiIcon: {
+    width: 30,
+    height: 30,
   },
   // Modal Styles
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     width: width * 0.8,

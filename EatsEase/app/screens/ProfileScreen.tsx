@@ -1,35 +1,25 @@
 import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Header from "../components/Headers";
-import Tabs from "../components/NavigateBottomBar";
-import { NavigationContainer } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
 export default function ProfileScreen() {
-
   const navigation = useNavigation();
 
   const handleLogout = async () => {
     try {
-        await AsyncStorage.removeItem('token'); // Remove token from AsyncStorage
-        console.log('Logged out successfully');
-        navigation.navigate('Login'); // Navigate to login screen
+      await AsyncStorage.removeItem("token");
+      console.log("Logged out successfully");
+      navigation.navigate("Login");
     } catch (err) {
-        console.error('Error logging out', err);
+      console.error("Error logging out", err);
     }
   };
 
   return (
     <View style={styles.container}>
-
       {/* Profile Section */}
       <View style={styles.profileSection}>
-        {/* <Image
-          style={styles.profileImage}
-          source={require("../assets/profile_icon.png")} // Replace with your image path
-        /> */}
         <Text style={styles.profileName}>thacwn</Text>
         <Text style={styles.joinDate}>เข้าร่วมตั้งแต่ 28 August 2024</Text>
       </View>
@@ -48,18 +38,23 @@ export default function ProfileScreen() {
           <Text style={styles.detailLabel}>🎂</Text>
           <Text style={styles.detailText}>21 years</Text>
         </View>
-        <TouchableOpacity 
-          onPress={() => navigation.navigate('History')}
-          style={styles.detailRow}>
-          <Text style={styles.detailLabel}>🕒</Text>
-          <Text style={styles.detailText}>History</Text>
+
+        {/* History */}
+        <TouchableOpacity onPress={() => navigation.navigate("History")} style={styles.touchableRow}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>🕒</Text>
+            <Text style={styles.detailText}>History</Text>
+            <Image source={{ uri: "https://cdn-icons-png.flaticon.com/128/130/130884.png" }} style={styles.nextIcon} />
+          </View>
         </TouchableOpacity>
-      {/* Preferences Row navigation to SettingScreen */}
-        <TouchableOpacity 
-          onPress={() => navigation.navigate('Preferences')}
-          style={styles.detailRow}>
-          <Text style={styles.detailLabel}>⚙️</Text>
-          <Text style={styles.detailText}>Preferences</Text>
+
+        {/* Preferences */}
+        <TouchableOpacity onPress={() => navigation.navigate("Preferences")} style={styles.touchableRow}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>⚙️</Text>
+            <Text style={styles.detailText}>Preferences</Text>
+            <Image source={{ uri: "https://cdn-icons-png.flaticon.com/128/130/130884.png" }} style={styles.nextIcon} />
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -79,12 +74,6 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: "center",
     marginTop: 20,
-  },
-  profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#E8E8E8", // Placeholder background color
   },
   profileName: {
     fontSize: 20,
@@ -118,6 +107,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Mali Regular",
     flex: 1,
+  },
+  nextIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#888",
+  },
+  touchableRow: {
+    width: "100%",
   },
   logoutButton: {
     backgroundColor: "#FF6B6B",
