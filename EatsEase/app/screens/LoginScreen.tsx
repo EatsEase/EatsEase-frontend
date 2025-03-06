@@ -15,21 +15,21 @@ const LoginScreen = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await axiosInstance.post('/login', {
-                emailOrUsername,
-                password,
+            const response = await axiosInstance.post('https://eatsease-backend-1jbu.onrender.com/api/user/login', {
+                user_name: emailOrUsername,
+                user_password: password 
             });
     
-            // Save the token to AsyncStorage
+            // Save Token to AsyncStorage
             if (response.data.token) {
                 await AsyncStorage.setItem('token', response.data.token);
             }
     
-            // Check if token is saved successfully
+            // Check if token is saved
             const savedToken = await AsyncStorage.getItem('token');
             if (savedToken) {
                 console.log('Login successful:', response.data);
-                navigation.navigate('FirstPreferences'); // Navigate to preferences or home screen
+                navigation.navigate('MainLayout');
             } else {
                 console.error('Token not saved');
             }
@@ -38,10 +38,12 @@ const LoginScreen = () => {
             // Handle login error
             setError('Login failed. Please check your credentials and try again.');
             console.error('Login error:', err);
+    
+            // แสดง Body ของ Error Response (Debugging)
+            console.log(err.response ? err.response.data : err.message);
         }
     };
     
-
     return (
         <LinearGradient
             colors={['#FD3B71', '#FE5266', '#FE665D', '#FE5266', '#FD3B71']}
@@ -62,7 +64,7 @@ const LoginScreen = () => {
                 <Text style={styles.textH3}>ยินดีต้อนรับ</Text>
                 <View style={styles.form}>
                     <TextInput 
-                        placeholder="อีเมลหรือชื่อบัญชีผู้ใช้" 
+                        placeholder="ชื่อบัญชีผู้ใช้" 
                         style={styles.input} 
                         value={emailOrUsername}
                         onChangeText={setEmailOrUsername} 

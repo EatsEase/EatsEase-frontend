@@ -67,6 +67,8 @@ const SignupScreen = () => {
             setError('เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่');
             alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');
             console.error('Signup error:', err);
+            // Log body of error response
+            console.error('Signup error response:', err.response?.data);
         } finally {
             setLoading(false); // Stop loading state
         }
