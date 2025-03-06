@@ -29,7 +29,8 @@ const SignupScreen = () => {
         setLoading(true); // Start loading state
     
         try {
-            const signupResponse = await axiosInstance.post('/signup', {
+            // ทำ Signup ก่อน
+            const signupResponse = await axiosInstance.post('https://eatsease-backend-1jbu.onrender.com/api/user/signup', {
                 user_name: username,
                 user_email: email,
                 user_password: password,
@@ -37,28 +38,31 @@ const SignupScreen = () => {
     
             console.log("Signup response:", signupResponse.data);
     
-            if (signupResponse.data.token) {
-                const loginResponse = await axiosInstance.post('/login', {
-                    user_name: username,
-                    user_password: password,
-                });
+            // ถ้าสมัครเสร็จ ให้ Login ทันทีเพื่อรับ Token
+            const loginResponse = await axiosInstance.post('https://eatsease-backend-1jbu.onrender.com/api/user/login', {
+                user_name: username,
+                user_password: password,
+            });
     
-                console.log("Login response:", loginResponse.data);
+            console.log("Login response:", loginResponse.data);
     
-                if (loginResponse.data.token) {
-                    await AsyncStorage.setItem('token', loginResponse.data.token);
+            if (loginResponse.data.token) {
+                await AsyncStorage.setItem('token', loginResponse.data.token);
     
-                    const savedToken = await AsyncStorage.getItem('token');
-                    if (savedToken) {
-                        console.log('Signup and login successful:', loginResponse.data);
-                        alert('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ');
-                        navigation.navigate('FirstPreferences'); // Navigate to next screen
-                    } else {
-                        setError('Token not saved');
-                        alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
-                    }
+                const savedToken = await AsyncStorage.getItem('token');
+                if (savedToken) {
+                    console.log('Signup and login successful:', loginResponse.data);
+                    alert('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ');
+                    navigation.navigate('FirstPreferences'); // Navigate to next screen
+                } else {
+                    setError('Token not saved');
+                    alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
                 }
+            } else {
+                setError('เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่');
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
             }
+    
         } catch (err) {
             setError('เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่');
             alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');

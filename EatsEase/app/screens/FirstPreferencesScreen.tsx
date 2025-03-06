@@ -159,14 +159,15 @@ const styles = StyleSheet.create({
     },
     categoryBox: {
         backgroundColor: '#d9d9d9',
-        padding: 15,
+        paddingVertical: 15,
+        paddingHorizontal: 10,
         borderRadius: 10,
         margin: 5,
         alignItems: 'center',
         justifyContent: 'center',
-        flexBasis: '28%', // Flexible width to adjust based on screen size
-        minWidth: 100,
-        flexShrink: 1,
+        alignSelf: 'flex-start', // ให้ขนาดของกล่องปรับตามข้อความ
+        minWidth: 100, // กำหนดค่าขั้นต่ำ
+        maxWidth: '45%', // ป้องกันไม่ให้กล่องกว้างเกินไป
     },
     selectedCategoryBox: {
         backgroundColor: '#FD3B71',
@@ -175,9 +176,9 @@ const styles = StyleSheet.create({
         color: 'black',
         fontFamily: 'Mali-Bold',
         textAlign: 'center',
-        paddingTop: 0,
-        paddingBottom: 0,
-        height: 20,
+        flexWrap: 'wrap', // ให้ข้อความขึ้นบรรทัดใหม่หากยาวเกิน
+        minWidth: 80, // ให้กล่องเริ่มต้นมีขนาดพอดี
+        maxWidth: '100%', // ป้องกันการล้น
     },
     selectedCategoryText: {
         color: 'white',
