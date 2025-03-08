@@ -5,12 +5,14 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import homeScreenData from '../services/homeScreenData';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 interface CardItem {
   id: string;
   menuTitle: string;
   backgroundColor: string;
-  image?: any;
+  image: any;
 }
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'HomeScreen'>;
@@ -20,53 +22,135 @@ const HomeScreen: React.FC = () => {
   const [likedMenus, setLikedMenus] = useState<CardItem[]>([]);
   const [dislikedMenus, setDislikedMenus] = useState<CardItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState<string | null>(null);
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await homeScreenData(); // Fetch API data
-      if (data) {
-        const transformedData: CardItem[] = data.map((item: any) => ({
-          id: item._id,
-          menuTitle: item.menu_name,
-          backgroundColor: '#d9B382',
-        }));
-        setSampleCardArray(transformedData.reverse());
+      try {
+        const storedUsername = await AsyncStorage.getItem('username');
+        if (!storedUsername) {
+          Alert.alert('Error', 'No username found. Please log in again.');
+          navigation.navigate('Login');
+          return;
+        }
+        setUsername(storedUsername);
+
+        const data = await homeScreenData();
+        if (data) {
+          const transformedData: CardItem[] = data.map((item: any) => ({
+            id: item._id,
+            menuTitle: item.menu_name,
+            backgroundColor: '#d9B382',
+            image: item.menu_image,
+          }));
+          setSampleCardArray(transformedData.reverse());
+        }
+      } catch (error) {
+        console.error('Error fetching home screen data:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchData();
   }, []);
 
+  // Fetch user profile to confirm the update
+  const fetchUserProfile = async () => {
+    if (!username) return;
+    try {
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
+      console.log("Updated User Profile:", response.data);
+    } catch (error) {
+      console.error("Error fetching updated user profile:", error);
+    }
+  };
+
+  // Function to update liked/disliked menus via PUT request immediately after swipe
+  const updateUserMenus = async (newLikedMenus: CardItem[], newDislikedMenus: CardItem[]) => {
+    if (!username) {
+      console.error("Username not found, can't update menus.");
+      return;
+    }
+  
+    try {
+      // 🔹 Step 1: Fetch the latest user profile
+      const userProfileResponse = await axios.get(
+        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`
+      );
+  
+      const userProfile = userProfileResponse.data.userProfile;
+      
+      // 🔹 Step 2: Create full request body with updated liked/disliked menus
+      const requestBody = {
+        "userProfile": {
+        user_name: username, // Ensure username is included
+        allergies: userProfile.allergies,  // Keep existing allergies
+        food_preferences: userProfile.food_preferences, // Keep existing preferences
+        distance_in_km_preference: userProfile.distance_in_km_preference, // Keep existing preference
+        price_range: userProfile.price_range, // Keep existing price range
+        liked_menu: newLikedMenus.map((menu) => menu.menuTitle), // Update liked_menu
+        disliked_menu: newDislikedMenus.map((menu) => menu.menuTitle), // Update disliked_menu
+        },
+      };
+  
+      console.log("🔹 Sending PUT request with:", JSON.stringify(requestBody, null, 2));
+  
+      // 🔹 Step 3: Send the PUT request
+      const response = await axios.put(
+        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`,
+        requestBody,
+        { headers: { "Content-Type": "application/json" } } // Ensure proper headers
+      );
+  
+      console.log("PUT Response:", response.data);
+  
+      // 🔹 Step 4: Fetch updated profile to verify changes
+      fetchUserProfile();
+  
+    } catch (error) {
+      console.error("Error updating liked/disliked menus:", error.response?.data || error);
+      Alert.alert("Error", "Could not update menu preferences. Please try again.");
+    }
+  };
+  
+
+  // Handle swipe actions (Real-Time PUT request after each right swipe)
   const handleSwipe = (direction: string, item: CardItem) => {
     if (direction === 'Right') {
-      console.log("Right");
+      console.log('Swiped Right:', item.menuTitle);
 
-      // Prevent swiping right more than 5 times
       if (likedMenus.length >= 5) {
-        Alert.alert("Limit Reached", "You can only like up to 5 menus. Remove some before adding more.");
+        Alert.alert('Limit Reached', 'You can only like up to 5 menus. Remove some before adding more.');
         return;
       }
 
-      setLikedMenus((prev) => {
-        const updatedLikedMenus = [...prev, item];
+      const updatedLikedMenus = [...likedMenus, item];
+      setLikedMenus(updatedLikedMenus);
 
-        if (updatedLikedMenus.length === 5) {
-          console.log("Navigating to YourListScreen");
-          navigation.navigate('YourListScreen', {
-            likedMenus: updatedLikedMenus,
-            updateLikedMenus: (newMenus: CardItem[]) => setLikedMenus(newMenus),
-          });
-        }
+      // Immediately update backend after swiping right
+      updateUserMenus(updatedLikedMenus, dislikedMenus);
 
-        return updatedLikedMenus;
-      });
+      // Navigate to `YourListScreen` once 5 menus are liked
+      if (updatedLikedMenus.length === 5) {
+        console.log('Navigating to YourListScreen');
+        navigation.navigate('YourListScreen', {
+          likedMenus: updatedLikedMenus,
+          updateLikedMenus: (newMenus: CardItem[]) => setLikedMenus(newMenus),
+        });
+      }
 
       removeCard(item.id);
     } else if (direction === 'Left') {
-      console.log("Left");
-      setDislikedMenus((prev) => [...prev, item]);
+      console.log('Swiped Left:', item.menuTitle);
+
+      const updatedDislikedMenus = [...dislikedMenus, item];
+      setDislikedMenus(updatedDislikedMenus);
+
+      // Immediately update backend after swiping left
+      updateUserMenus(likedMenus, updatedDislikedMenus);
+
       removeCard(item.id);
     }
   };
@@ -88,6 +172,7 @@ const HomeScreen: React.FC = () => {
                 item={item}
                 removeCard={() => removeCard(item.id)}
                 swipedDirection={(dir) => handleSwipe(dir, item)}
+                image={item.image}
               />
             ))}
           </View>
@@ -98,7 +183,6 @@ const HomeScreen: React.FC = () => {
             <Icon name="cards-heart" size={40} color="#5ECFA6" />
           </View>
 
-          {/* Button to Navigate to YourListScreen Anytime */}
           <TouchableOpacity
             style={styles.viewListButton}
             onPress={() => navigation.navigate('YourListScreen', {
@@ -108,7 +192,6 @@ const HomeScreen: React.FC = () => {
           >
             <Text style={styles.viewListText}>เมนูที่ชอบ ({likedMenus.length}/5)</Text>
           </TouchableOpacity>
-
         </>
       )}
     </SafeAreaView>

@@ -3,13 +3,57 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, Act
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const FirstPreferences = () => {
     const [categories, setCategories] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [username, setUsername] = useState<string | null>(null);
+    const navigation = useNavigation();
 
     useEffect(() => {
+        const initializeUserProfile = async () => {
+            try {
+                // Get the stored username correctly
+                const storedUsername = await AsyncStorage.getItem("username");
+                if (!storedUsername) {
+                    Alert.alert("Error", "No username found. Please log in again.");
+                    navigation.navigate("Login");
+                    return;
+                }
+                setUsername(storedUsername); // Store username in state
+
+                // Check if user profile exists
+                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+                console.log("User Profile Data:", response.data);
+
+                // Set existing food preferences
+                setSelectedCategories(response.data.userProfile.food_preferences || []);
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+
+                if (error.response?.status === 404) {
+                    console.log("User profile not found. Creating new profile...");
+
+                    // Create user profile if not found
+                    await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/userProfile`, {
+                        user_name: username,
+                        food_preferences: [],
+                        allergies: [],
+                        liked_menu: [],
+                        disliked_menu: [],
+                        distance_in_km_preference: "5 km",
+                        price_range: "฿",
+                    });
+
+                    console.log("User profile created successfully!");
+                } else {
+                    Alert.alert("Error", "Failed to fetch user profile.");
+                }
+            }
+        };
+
         const fetchCategories = async () => {
             try {
                 const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/category/all');
@@ -23,25 +67,48 @@ const FirstPreferences = () => {
             }
         };
 
+        initializeUserProfile();
         fetchCategories();
     }, []);
 
     const toggleCategory = (category: string) => {
-        setSelectedCategories(prevState => 
+        setSelectedCategories(prevState =>
             prevState.includes(category)
                 ? prevState.filter(item => item !== category) // Deselect if selected
                 : [...prevState, category] // Add if not selected
         );
     };
 
-    const navigation = useNavigation();
+    const handleSubmit = async () => {
+        if (!username) {
+            Alert.alert("Error", "No username found. Please log in again.");
+            return;
+        }
 
-    const handleSubmit = () => {
-        if (selectedCategories.length >= 3) {
-            Alert.alert("Selected Categories", JSON.stringify(selectedCategories));
-            navigation.navigate('AllergiesScreen'); 
-        } else {
+        if (selectedCategories.length < 3) {
             Alert.alert("Error", "Please select at least 3 food categories.");
+            return;
+        }
+
+        try {
+            // Ensure user profile exists before updating
+            await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
+
+            // PUT request to update food_preferences
+            const response = await axios.put(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`, {
+                food_preferences: selectedCategories, // Update food preferences
+            });
+
+            if (response.status === 200) {
+                Alert.alert("Success", "Preferences updated successfully!");
+                console.log("Preferences updated successfully:", response.data);
+                navigation.navigate('AllergiesScreen'); // Navigate to the next screen
+            } else {
+                throw new Error("Failed to update preferences");
+            }
+        } catch (error) {
+            console.error("Error updating preferences:", error);
+            Alert.alert("Error", "Could not update preferences. Please try again.");
         }
     };
 
@@ -54,8 +121,8 @@ const FirstPreferences = () => {
             {/* Header */}
             <View style={styles.header}>
                 <Image source={require('../../app/image/logo.png')}
-                    resizeMode="contain" 
-                    style={styles.logo} 
+                    resizeMode="contain"
+                    style={styles.logo}
                 />
                 <Text style={styles.textH1}>EatsEase</Text>
             </View>
@@ -105,6 +172,7 @@ const FirstPreferences = () => {
 }
 
 export default FirstPreferences;
+
 
 const styles = StyleSheet.create({
     container: {
@@ -165,9 +233,9 @@ const styles = StyleSheet.create({
         margin: 5,
         alignItems: 'center',
         justifyContent: 'center',
-        alignSelf: 'flex-start', // ให้ขนาดของกล่องปรับตามข้อความ
-        minWidth: 100, // กำหนดค่าขั้นต่ำ
-        maxWidth: '45%', // ป้องกันไม่ให้กล่องกว้างเกินไป
+        alignSelf: 'flex-start',
+        minWidth: 100,
+        maxWidth: '45%',
     },
     selectedCategoryBox: {
         backgroundColor: '#FD3B71',
@@ -176,9 +244,9 @@ const styles = StyleSheet.create({
         color: 'black',
         fontFamily: 'Mali-Bold',
         textAlign: 'center',
-        flexWrap: 'wrap', // ให้ข้อความขึ้นบรรทัดใหม่หากยาวเกิน
-        minWidth: 80, // ให้กล่องเริ่มต้นมีขนาดพอดี
-        maxWidth: '100%', // ป้องกันการล้น
+        flexWrap: 'wrap',
+        minWidth: 80,
+        maxWidth: '100%',
     },
     selectedCategoryText: {
         color: 'white',

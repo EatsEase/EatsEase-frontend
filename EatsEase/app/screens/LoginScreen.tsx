@@ -15,7 +15,7 @@ const LoginScreen = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await axiosInstance.post('https://eatsease-backend-1jbu.onrender.com/api/user/login', {
+            const response = await axiosInstance.post('cd/user/login', {
                 user_name: emailOrUsername,
                 user_password: password 
             });

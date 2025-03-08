@@ -15,7 +15,6 @@ const YourListScreen: React.FC = () => {
   const [menus, setMenus] = useState<CardItem[]>([]);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
-  // ✅ Load likedMenus from storage when screen opens
   useEffect(() => {
     const loadLikedMenus = async () => {
       try {

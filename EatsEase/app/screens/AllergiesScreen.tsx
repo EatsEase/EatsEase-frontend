@@ -1,43 +1,116 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-
-const allergies = [
-  "Dairy", "Egg", "Gluten", "Peanut", "Sesame", "Shellfish", "Soy", "Tree Nut", 
-  "Wheat", "Fish", "Sulfite", "Molluscs", "Mustard", "Celery", "Lupin", "Crustaceans", 
-  "Soybean", "Coconut", "Corn", "Kiwi", "Milk", "Oat", "Pineapple", "Rice", "Strawberry", 
-  "Tomato", "Yeast", "Apple", "Banana", "Beef", "Carrot", "Chicken", "Chocolate", "Coffee", 
-  "Garlic", "Ginger", "Honey", "Lemon", "Mango", "Mushroom", "Orange", "Peach", "Pepper", 
-  "Pork", "Potato", "Sesame Seed", "Sunflower", "Vanilla", "Watermelon", "Zucchini"
-];
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import allergiesScreenData from "../services/allergiesScreendata"; // Import data function
 
 const AllergiesScreen = () => {
+    const [allergies, setAllergies] = useState<string[]>([]);
     const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [username, setUsername] = useState<string | null>(null);
+    const navigation = useNavigation();
+
+    useEffect(() => {
+        const initializeUserProfile = async () => {
+            try {
+                // Retrieve username from AsyncStorage
+                const storedUsername = await AsyncStorage.getItem("username");
+                if (!storedUsername) {
+                    Alert.alert("Error", "No username found. Please log in again.");
+                    navigation.navigate("Login");
+                    return;
+                }
+                setUsername(storedUsername);
+
+                // Fetch user profile to get existing allergies
+                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+                console.log("User Profile Data:", response.data);
+
+                setSelectedAllergies(response.data.userProfile.allergies || []);
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+
+                if (error.response?.status === 404) {
+                    console.log("User profile not found. Creating new profile...");
+                    return;
+                }
+
+                Alert.alert("Error", "Failed to fetch user profile.");
+            }
+        };
+
+        const fetchAllergies = async () => {
+            setLoading(true);
+            try {
+                const data = await allergiesScreenData(); // Fetch allergy categories from API
+                const allergyNames = data.map((item: { allergy_name: string }) => item.allergy_name);
+                setAllergies(allergyNames);
+            } catch (error) {
+                console.error("Error fetching allergies:", error);
+                Alert.alert("Error", "Failed to fetch allergies.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initializeUserProfile();
+        fetchAllergies();
+    }, []);
 
     const toggleAllergy = (allergy: string) => {
-        setSelectedAllergies(prevState => 
+        setSelectedAllergies(prevState =>
             prevState.includes(allergy)
                 ? prevState.filter(item => item !== allergy) // Deselect if selected
                 : [...prevState, allergy] // Add if not selected
         );
     };
 
-    const navigation = useNavigation();
+    const handleSubmit = async () => {
+        if (!username) {
+            Alert.alert("Error", "No username found. Please log in again.");
+            return;
+        }
 
-    const handleSubmit = () => {
-        // Show selected allergies (if any)
-        Alert.alert("Selected Allergies", JSON.stringify(selectedAllergies));
-        navigation.navigate('MainLayout'); // Navigate to MainLayout screen
+        try {
+            // First, get full user profile (so we don't overwrite other fields)
+            const userProfileResponse = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
+            const userId = userProfileResponse.data.userProfile._id; // Extract `_id`
+            
+            if (!userId) {
+                throw new Error("User ID not found in profile response.");
+            }
+
+            console.log("Updating allergies for user ID:", userId);
+
+            // Send `PUT` request with updated allergies
+            const response = await axios.put(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`, {
+                allergies: selectedAllergies,  // Update allergies
+                food_preferences: userProfileResponse.data.userProfile.food_preferences, 
+                distance_in_km_preference: userProfileResponse.data.userProfile.distance_in_km_preference,
+                price_range: userProfileResponse.data.userProfile.price_range,
+                liked_menu: userProfileResponse.data.userProfile.liked_menu,
+                disliked_menu: userProfileResponse.data.userProfile.disliked_menu,
+            });
+
+            if (response.status === 200) {
+                Alert.alert("Success", "Allergies updated successfully!");
+                console.log("Allergies updated successfully!", response.data);
+                navigation.navigate('MainLayout'); // Navigate to home after updating
+            } else {
+                throw new Error("Failed to update allergies");
+            }
+        } catch (error) {
+            console.error("Error updating allergies:", error);
+            Alert.alert("Error", "Could not update allergies. Please try again.");
+        }
     };
 
     const handleSkip = () => {
-        // Proceed to the next screen without selecting allergies
-        navigation.navigate('MainLayout'); // Navigate to MainLayout screen
+        navigation.navigate('MainLayout'); // Skip without updating allergies
     };
-
-    const isSkipDisabled = selectedAllergies.length > 0; // Skip is disabled when any allergy is selected
-    const isNextDisabled = selectedAllergies.length === 0; // Next is disabled when no allergy is selected
 
     return (
         <LinearGradient
@@ -45,57 +118,52 @@ const AllergiesScreen = () => {
             locations={[0, 0.21, 0.48, 0.78, 1]}
             style={styles.container}
         >
-            {/* Header */}
             <View style={styles.header}>
                 <Image source={require('../../app/image/logo.png')} resizeMode="contain" style={styles.logo} />
                 <Text style={styles.textH1}>EatsEase</Text>
             </View>
 
-            {/* Footer */}
             <View style={styles.footer}>
                 <Text style={styles.textH3}>แพ้อาหารประเภทไหนมั้ย?</Text>
 
-                {/* Allergy Grid - wrapped in ScrollView */}
-                <ScrollView contentContainerStyle={styles.gridContainer}>
-                    {allergies.map((allergy, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={[
-                                styles.categoryBox,
-                                selectedAllergies.includes(allergy) && styles.selectedCategoryBox
-                            ]}
-                            onPress={() => toggleAllergy(allergy)}
-                        >
-                            <Text style={[
-                                styles.categoryText,
-                                selectedAllergies.includes(allergy) && styles.selectedCategoryText
-                            ]}>
-                                {allergy}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                {loading ? (
+                    <ActivityIndicator size="large" color="#FD3B71" />
+                ) : (
+                    <ScrollView contentContainerStyle={styles.gridContainer}>
+                        {allergies.map((allergy, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={[
+                                    styles.categoryBox,
+                                    selectedAllergies.includes(allergy) && styles.selectedCategoryBox
+                                ]}
+                                onPress={() => toggleAllergy(allergy)}
+                            >
+                                <Text style={[
+                                    styles.categoryText,
+                                    selectedAllergies.includes(allergy) && styles.selectedCategoryText
+                                ]}>
+                                    {allergy}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
 
-                {/* "Next" Button */}
                 <TouchableOpacity
                     style={[
                         styles.enterButton,
-                        isNextDisabled && { backgroundColor: '#E6E6E6' } // Disabled when no allergies are selected
+                        selectedAllergies.length === 0 && { backgroundColor: '#E6E6E6' }
                     ]}
                     onPress={handleSubmit}
-                    disabled={isNextDisabled}
+                    disabled={selectedAllergies.length === 0}
                 >
                     <Text style={styles.enterButtonText}>Next</Text>
                 </TouchableOpacity>
 
-                {/* "Skip" Button */}
                 <TouchableOpacity
-                    style={[
-                        styles.skipButton,
-                        isSkipDisabled && { backgroundColor: '#E6E6E6' } // Disabled when allergies are selected
-                    ]}
+                    style={styles.skipButton}
                     onPress={handleSkip}
-                    disabled={isSkipDisabled}
                 >
                     <Text style={styles.skipButtonText}>Skip</Text>
                 </TouchableOpacity>
@@ -105,6 +173,7 @@ const AllergiesScreen = () => {
 };
 
 export default AllergiesScreen;
+
 
 const styles = StyleSheet.create({
     container: {
@@ -127,13 +196,6 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         paddingBottom: 0,
         height: 50,
-    },
-    textH5: {
-        fontSize: 16,
-        color: 'gray',
-        fontFamily: 'Jua Regular',
-        textAlign: 'center',
-        marginTop: 20,
     },
     logo: {
         width: 90,
@@ -162,7 +224,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         marginTop: 20,
-        paddingBottom: 20, // Optional, add padding at the bottom for smoother scrolling
+        paddingBottom: 20,
     },
     categoryBox: {
         backgroundColor: '#d9d9d9',
@@ -171,16 +233,16 @@ const styles = StyleSheet.create({
         margin: 5,
         alignItems: 'center',
         justifyContent: 'center',
-        flexBasis: '28%', // Flexible width to adjust based on screen size
-        minWidth: 100, // Minimum width for long text
-        flexShrink: 1, // Allow shrinking for longer text
+        flexBasis: '28%',
+        minWidth: 100,
+        flexShrink: 1,
     },
     selectedCategoryBox: {
         backgroundColor: '#FD3B71',
     },
     categoryText: {
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
     },
     selectedCategoryText: {
@@ -199,14 +261,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Jua Regular',
     },
     skipButton: {
-        backgroundColor: '#5ECFA6', // Default green
+        backgroundColor: '#5ECFA6',
         paddingVertical: 15,
         borderRadius: 30,
         marginTop: 10,
         alignItems: 'center',
     },
     skipButtonText: {
-        color: 'black',
+        color: 'white',
         fontSize: 16,
         fontFamily: 'Jua Regular',
     },

@@ -46,26 +46,28 @@ const SignupScreen = () => {
     
             console.log("Login response:", loginResponse.data);
     
-            if (loginResponse.data.token) {
+            if (loginResponse.data) {
                 await AsyncStorage.setItem('token', loginResponse.data.token);
-    
+                await AsyncStorage.setItem('username', loginResponse.data.user);
+                
+                const savedUsername = await AsyncStorage.getItem('username');
                 const savedToken = await AsyncStorage.getItem('token');
-                if (savedToken) {
+                if (savedToken && savedUsername) {
                     console.log('Signup and login successful:', loginResponse.data);
                     alert('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ');
                     navigation.navigate('FirstPreferences'); // Navigate to next screen
                 } else {
-                    setError('Token not saved');
+                    setError('Token and Username not saved');
                     alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
                 }
             } else {
                 setError('เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่');
-                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                alert('เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่');
             }
     
         } catch (err) {
             setError('เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่');
-            alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');
+            alert('เกิดข้อผิดพลาดในการสมัครสมาชิก เนื่องจากมีผู้ใช้นี้อยู่แล้ว กรุณาลองใหม่');
             console.error('Signup error:', err);
             // Log body of error response
             console.error('Signup error response:', err.response?.data);

@@ -65,7 +65,10 @@ const Tabs = () => {
                     options={{
                         tabBarIcon: ({ focused }) => (
                             <View style={styles.homeIconContainer}>
-                                <Icon name="home" size={34} color="white" style={styles.icon} />
+                                <Image 
+                                    source={require("../../app/image/home.png")}
+                                    style={styles.homeIconContainer} 
+                                />
                                 <Text style={styles.text}>Home</Text>
                             </View>
                         ),
@@ -110,9 +113,10 @@ const Tabs = () => {
 
 const styles = StyleSheet.create({
     text: {
-        fontSize: 12,
+        fontSize: 16,
         color: 'white',
         fontFamily: 'Jua Regular',
+        fontWeight: 'bold',
     },
     shadow: {
         // shadowColor: '#7F5DF0',
@@ -133,6 +137,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         top: 5,
+        width: 35,
+        height: 32,
+        resizeMode: 'contain',
+        marginBottom: 6,
     },
     profileIconContainer: {
         alignItems: 'center',
