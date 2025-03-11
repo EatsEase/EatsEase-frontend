@@ -27,6 +27,11 @@ const SignupScreen = () => {
         }
     
         setLoading(true); // Start loading state
+
+        console.log(birthdate);
+        if (typeof birthdate === 'string') {
+            console.log('Converting birthdate to Date object...');
+        }
     
         try {
             // ทำ Signup ก่อน
@@ -34,8 +39,10 @@ const SignupScreen = () => {
                 user_name: username,
                 user_email: email,
                 user_password: password,
+                gender: gender,
+                birthdate: birthdate,
             });
-    
+        
             console.log("Signup response:", signupResponse.data);
     
             // ถ้าสมัครเสร็จ ให้ Login ทันทีเพื่อรับ Token
@@ -67,7 +74,7 @@ const SignupScreen = () => {
     
         } catch (err) {
             setError('เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่');
-            alert('เกิดข้อผิดพลาดในการสมัครสมาชิก เนื่องจากมีผู้ใช้นี้อยู่แล้ว กรุณาลองใหม่');
+            alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');
             console.error('Signup error:', err);
             // Log body of error response
             console.error('Signup error response:', err.response?.data);

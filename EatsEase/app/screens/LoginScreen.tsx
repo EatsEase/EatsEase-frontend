@@ -24,6 +24,9 @@ const LoginScreen = () => {
             if (response.data.token) {
                 await AsyncStorage.setItem('token', response.data.token);
             }
+
+            // ต้อง get toekn ของ user มาใหม่ หลังจาก user logout แล้ว login ใหม่
+            
     
             // Check if token is saved
             const savedToken = await AsyncStorage.getItem('token');

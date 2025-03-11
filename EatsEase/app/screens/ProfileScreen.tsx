@@ -23,7 +23,7 @@ export default function ProfileScreen() {
 
         const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
         console.log("User Profile Data:", response.data);
-        setUserData(response.data.userProfile);
+        setUserData(response.data);
       } catch (error) {
         console.error("Error fetching user profile:", error);
         Alert.alert("Error", "Failed to fetch user profile.");
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       {/* Profile Section */}
       <View style={styles.profileSection}>
-        <Text style={styles.profileName}>{userData.user_name || "Unknown"}</Text>
+        <Text style={styles.profileName}>{userData.userProfile.user_name || "Unknown"}</Text>
         <Text style={styles.joinDate}>เข้าร่วมตั้งแต่ {new Date(userData.created_date).toLocaleDateString()}</Text>
       </View>
 
@@ -78,11 +78,11 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>♀️</Text>
-          <Text style={styles.detailText}>{userData.gender || "Not specified"}</Text>
+          <Text style={styles.detailText}>{userData.userProfile.gender || "Not specified"}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>🎂</Text>
-          <Text style={styles.detailText}>{userData.age ? `${userData.age} years` : "Not specified"}</Text>
+          <Text style={styles.detailText}>{ userData.age ? `${userData.age} years` : "Not specified"}</Text>
         </View>
 
         {/* History */}
@@ -106,7 +106,7 @@ export default function ProfileScreen() {
 
       {/* Logout Button */}
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-        <Text style={styles.logoutText}>Log out</Text>
+        <Text style={styles.logoutText}>ออกจากระบบ</Text>
       </TouchableOpacity>
     </View>
   );
@@ -125,6 +125,6 @@ const styles = StyleSheet.create({
   detailText: { fontSize: 16, fontFamily: "Mali Regular", flex: 1 },
   nextIcon: { width: 20, height: 20, tintColor: "#888" },
   touchableRow: { width: "100%" },
-  logoutButton: { backgroundColor: "#FF6B6B", paddingVertical: 10, paddingHorizontal: 50, borderRadius: 25, alignSelf: "center", marginTop: 30 },
+  logoutButton: { backgroundColor: "#FF6B6B", paddingVertical: 15, paddingHorizontal: 30, borderRadius: 25, alignSelf: "center", marginTop: 30 },
   logoutText: { color: "#fff", fontSize: 16, fontFamily: "Mali Bold" },
 });

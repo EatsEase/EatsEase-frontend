@@ -16,6 +16,7 @@ import PreferencesScreen from './app/screens/PreferencesScreen';
 import HistoryScreen from './app/screens/HistoryScreen';
 import ProfileScreen from './app/screens/ProfileScreen';
 import AllergiesScreen from './app/screens/AllergiesScreen';
+import MapScreen from './app/screens/MapScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -90,6 +91,7 @@ export default function App() {
           component={HistoryScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="MapScreen" component={MapScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>

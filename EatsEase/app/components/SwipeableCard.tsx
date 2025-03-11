@@ -98,7 +98,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedD
           )}
       </View>
 
-
       {/* แสดงชื่อเมนู */}
       <View style={styles.textContainer}>
         <Text style={styles.cardTitleStyle}>{item.menuTitle}</Text>
@@ -147,16 +146,18 @@ const styles = StyleSheet.create({
   textContainer: {
     width: '100%',
     padding: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // พื้นหลังโปร่งแสง
+    // backgroundColor: 'rgba(0, 0, 0, 0.6)', // พื้นหลังโปร่งแสง
     alignItems: 'center',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   cardTitleStyle: {
-    color: '#fff',
-    fontSize: 16,
+    color: 'rgba(0, 0, 0, 0.6)',
+    fontSize: 20,
     fontFamily: 'Mali SemiBold',
     textAlign: 'center',
     lineHeight: 30,
+    paddingTop: 5,
+    paddingBottom: 0,
   },
 });
