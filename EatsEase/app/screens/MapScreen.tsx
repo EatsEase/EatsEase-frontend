@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Modal from 'react-native-modal';
+import Header from '../components/Headers';
 
 interface Restaurant {
   id: string;
@@ -12,6 +13,12 @@ interface Restaurant {
   lat: number;
   long: number;
   restaurant_location: string;
+  restaurant_rating: number;
+  restaurant_price_range: string;
+  restaurant_description: string;
+  restaurant_image: string;
+  restaurant_menu: string[];
+  restaurant_location_link: string;
 }
 
 const MapScreen: React.FC = () => {
@@ -22,6 +29,14 @@ const MapScreen: React.FC = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [confirmedData, setConfirmedData] = useState<{ menu_name: string; restaurant_name: string; restaurant_location: string; restaurant_location_link: string; date: string } | null>(null);
+  const distances = ["3 km", "5 km", "7 km", "10 km"];
+  const priceMapping: { [key: string]: string } = {
+    "฿": "<100",
+    "฿฿": "100+",
+    "฿฿฿": "250+",
+    "฿฿฿฿": "500+",
+    "฿฿฿฿฿": "1,000+",
+  };
 
   useEffect(() => {
     fetchUsernameAndRestaurants();
@@ -43,7 +58,22 @@ const MapScreen: React.FC = () => {
       const response = await axios.get(
         `https://eatsease-backend-1jbu.onrender.com/api/restaurant/query/${username}`
       );
-      setRestaurants(response.data);
+
+      const formattedRestaurants = response.data.map((item: any) => ({
+        id: item.restaurant._id,
+        restaurant_name: item.restaurant.restaurant_name,
+        lat: item.restaurant.restaurant_latitude,
+        long: item.restaurant.restaurant_longtitude,
+        restaurant_location: item.restaurant.restaurant_location,
+        restaurant_rating: item.restaurant.restaurant_rating,
+        restaurant_price_range: item.restaurant.restaurant_price_range,
+        restaurant_description: item.restaurant.restaurant_description,
+        restaurant_image: item.restaurant.restaurant_image,
+        restaurant_menu: item.restaurant.restaurant_menu,
+        restaurant_location_link: item.restaurant.restaurant_location_link,
+      }));
+
+      setRestaurants(formattedRestaurants);
     } catch (error) {
       console.error("Error fetching restaurants:", error);
     } finally {
@@ -99,6 +129,7 @@ const MapScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <Header title="EatsEase" />
       {loading ? (
         <ActivityIndicator size="large" color="#5ECFA6" style={styles.loadingIndicator} />
       ) : (
@@ -122,9 +153,25 @@ const MapScreen: React.FC = () => {
                 style={{ width: 40, height: 40, resizeMode: 'contain' }}
               />
               <Callout>
-                <View style={styles.callout}>
-                  <Text style={styles.calloutTitle}>{restaurant.restaurant_name}</Text>
-                  <Text style={styles.calloutText}>{restaurant.restaurant_location}</Text>
+                <View style={styles.calloutContainer}>
+                  {/* Left Side - Text Info */}
+                  <View style={styles.calloutTextContainer}>
+                    <Text style={styles.calloutTitle}>{restaurant.restaurant_name}</Text>
+                    <Text style={styles.calloutText}>📍 {restaurant.restaurant_location}</Text>
+                    <Text style={styles.calloutText}>💰 ราคา: {priceMapping[restaurant.restaurant_price_range] || "ไม่ระบุ"}</Text>
+                    <Text style={styles.calloutText}>⭐️ ความนิยม: {restaurant.restaurant_rating.toFixed(1)}</Text>
+                    <Text style={styles.calloutText}>🚶🏻‍♂️ ระยะทาง: {distances[index]}</Text>
+                  </View>
+
+                  {/* Right Side - Image */}
+                  <Image 
+                    source={
+                      restaurant.restaurant_image
+                        ? { uri: restaurant.restaurant_image }
+                        : require('../../app/image/logo.png') // Default image
+                    } 
+                    style={styles.calloutImage} 
+                  />
                 </View>
               </Callout>
             </Marker>
@@ -175,9 +222,34 @@ export default MapScreen;
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
-  callout: { padding: 10, backgroundColor: "white", borderRadius: 10, width: 180 },
-  calloutTitle: { fontWeight: "bold", fontSize: 16 },
-  calloutText: { fontSize: 14, color: "gray" },
+  calloutContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 10,
+    width: 250,  // Adjust width for better layout
+  },
+  calloutTextContainer: {
+    flex: 1,  // Text takes up remaining space
+    marginRight: 10,  // Space between text and image
+  },
+  calloutTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 4,
+  },
+  calloutText: {
+    fontSize: 14,
+    color: "#555",
+    paddingVertical: 2,
+  },
+  calloutImage: {
+    width: 80,  // Adjust image size
+    height: 80,
+    borderRadius: 10,
+  },
   confirmButton: {
     position: "absolute",
     bottom: 30,

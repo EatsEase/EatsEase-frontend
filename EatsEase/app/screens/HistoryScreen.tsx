@@ -149,14 +149,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Mali-Regular',
   },
   menuText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 3,
     fontFamily: 'Mali-Regular',
+    paddingTop: 5,
   },
   text: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#555',
     marginBottom: 3,
     fontFamily: 'Mali-Regular',
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   mapButton: {
-    backgroundColor: "#3B82F6",
+    backgroundColor: "#5ECFA6",
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 10,
@@ -177,6 +178,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     fontFamily: 'Mali-Regular',
+    padding: 4,
   },
   backButton: {
     backgroundColor: '#FE5266',
