@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Linking, Alert } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -147,7 +147,7 @@ const MapScreen: React.FC = () => {
       {/* 🎉 Popup Modal เมื่อกด Confirm */}
       <Modal isVisible={isModalVisible} animationIn="zoomIn" animationOut="zoomOut">
         <View style={styles.modalContent}>
-          <Image source={require('../../app/image/celebration.png')} style={styles.celebrationImage} />
+          <Image source={require('../../app/image/celebration.gif')} style={styles.celebrationImage} />
           <Text style={styles.modalTitle}>ยินดีด้วย! {"\n"} คุณได้อาหารสำหรับวันนี้แล้ว!</Text>
           {confirmedData && confirmedData.menu_name && (
             <Text style={styles.modalText}>
@@ -157,11 +157,11 @@ const MapScreen: React.FC = () => {
             </Text>
           )}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.mapButton} onPress={openMapLink}>
-              <Text style={styles.buttonText}>ไปยังแผนที่</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.closeButton} onPress={handleCloseSuccessModal}>
               <Text style={styles.buttonText}>กลับไปหน้าหลัก</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mapButton} onPress={openMapLink}>
+              <Text style={styles.buttonText}>ไปยังแผนที่</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -191,11 +191,11 @@ const styles = StyleSheet.create({
   confirmButtonText: { color: "white", fontSize: 18, fontWeight: "bold" },
   loadingIndicator: { flex: 1, justifyContent: "center", alignItems: "center" },
   modalContent: { backgroundColor: "white", padding: 20, borderRadius: 15, alignItems: "center" },
-  modalTitle: { fontSize: 20, fontWeight: "bold", textAlign: "center", marginBottom: 10 },
-  modalText: { fontSize: 16, textAlign: "center", marginBottom: 10 },
+  modalTitle: { fontSize: 20, fontWeight: "bold", fontFamily: "Mali-Regular", textAlign: "center", marginBottom: 10, height: 50, marginTop: 10 },
+  modalText: { fontSize: 16, fontFamily: "Mali-Regular", textAlign: "center", marginBottom: 5 },
   buttonContainer: { flexDirection: "row", justifyContent: "space-between", width: "100%" },
-  mapButton: { backgroundColor: "#3B82F6", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },
-  closeButton: { backgroundColor: "#5ECFA6", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },
-  buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-  celebrationImage: { width: 100, height: 100, marginBottom: 10 },
+  mapButton: { backgroundColor: "#5ECFA6", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10, paddingTop: 10 },
+  closeButton: { backgroundColor: "#FF6B6B", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },
+  buttonText: { color: "white", fontSize: 16, fontWeight: "bold", fontFamily: "Mali-Regular", padding: 5 },
+  celebrationImage: { width: 120, height: 120, marginBottom: 10 },
 });

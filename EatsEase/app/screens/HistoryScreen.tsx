@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
+import { View, StyleSheet, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -46,7 +46,7 @@ const HistoryScreen = () => {
       if (response.data.history_detail && response.data.history_detail.length > 0) {
         setHistoryData(response.data.history_detail);
       } else {
-        console.error("❌ No history data found.");
+        // console.error("❌ No history data found.");
       }
     } catch (error) {
       console.error("❌ Error fetching history:", error);
@@ -86,7 +86,7 @@ const HistoryScreen = () => {
       <View style={styles.listContainer}>
         {loading ? (
           <ActivityIndicator size="large" color="#5ECFA6" />
-        ) : (
+        ) : historyData.length > 0 ?(
             <FlatList
             data={historyData}
             keyExtractor={(item) => item._id}
@@ -94,6 +94,16 @@ const HistoryScreen = () => {
             contentContainerStyle={{ flexGrow: 1, paddingBottom: 80 }} // ✅ แก้ปัญหา Scroll Tab
             showsVerticalScrollIndicator={false}
             />
+        ) : (
+            // 🆕 UI เมื่อไม่มีประวัติอาหาร
+            <View style={styles.centerMessage}>
+            <Image source={require('../../app/image/bored.png')} style={styles.emptyImage} />
+            <Text style={styles.emptyMessage}>ยังไม่มีประวัติอาหารเลย!</Text>
+            <Text style={styles.emptyMessage}>ไปลองอาหารใหม่กันเถอะ</Text>
+            <TouchableOpacity style={styles.swipeButton} onPress={() => navigation.navigate('HomeScreen')}>
+              <Text style={styles.swipeButtonText}>ไปลองอาหารใหม่กัน!</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -184,5 +194,39 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     fontFamily: 'Mali-Bold',
+  },
+  // 🆕 UI ใหม่เมื่อไม่มีประวัติอาหาร
+  centerMessage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  emptyMessage: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: 'gray',
+    fontFamily: 'Mali-Bold',
+    paddingTop: 10,
+  },
+  emptyImage: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  swipeButton: {
+    backgroundColor: '#FFA500',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 50,
+    marginTop: 20,
+  },
+  swipeButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+    fontFamily: 'Mali-Bold',
+    padding: 5,
   },
 });

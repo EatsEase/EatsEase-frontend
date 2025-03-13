@@ -127,20 +127,27 @@ const YourListScreen: React.FC = () => {
       <View style={styles.gridContainer}>
         {menus.length > 0 ? (
           menus.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.card,
-                selectedCard === item.id && styles.selectedCard, // Highlight selected card
-              ]}
-              onPress={() => setSelectedCard(item.id)}
-            >
-              <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-              <Text style={styles.cardTitle}>{item.menuTitle}</Text>
-              <TouchableOpacity style={styles.removeIcon} onPress={() => handleRemove(item)}>
-                <Icon name="minus-circle" size={25} color="red" />
-              </TouchableOpacity>
+        <TouchableOpacity
+          key={item.id}
+          style={[
+            styles.card,
+            selectedCard === item.id && styles.selectedCard,
+          ]}
+          onPress={() => setSelectedCard(item.id)}
+        >
+          {/* Image Component */}
+          <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+
+          {/* Absolute Positioned Remove Button */}
+          <View style={styles.removeButtonContainer}>
+            <TouchableOpacity style={styles.removeIcon} onPress={() => handleRemove(item)}>
+              <Image source={require('../../app/image/minus.png')} style={styles.removeImage} />
             </TouchableOpacity>
+          </View>
+
+          {/* Menu Title */}
+          <Text style={styles.cardTitle}>{item.menuTitle}</Text>
+        </TouchableOpacity>
           ))
         ) : (
           <View style={styles.centerMessage}>
@@ -220,10 +227,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 5,
   },
-  removeIcon: {
+  removeButtonContainer: {
     position: 'absolute',
-    top: 5,
-    right: 5,
+    top: 5, // Adjust as needed
+    right: 5, // Adjust as needed
+    zIndex: 10, // Ensures it stays on top of the image
+  },
+  removeIcon: {
+    backgroundColor: 'red',  // Circle background
+    width: 25,
+    height: 25,
+    borderRadius: 35 / 2, // Circular shape
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5, // Shadow for Android
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  removeImage: {
+    width: 15,
+    height: 3, // Thin horizontal line
+    tintColor: 'white', // White minus icon inside
   },
   centerMessage: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyMessage: { textAlign: 'center', fontSize: 20, color: 'gray', fontFamily: 'Mali SemiBold', padding: 10 },

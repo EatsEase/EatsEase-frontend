@@ -38,8 +38,10 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("token");
-      await AsyncStorage.removeItem("username"); // Remove username too
+      await AsyncStorage.removeItem('username');
+
       console.log("Logged out successfully");
+      
       navigation.navigate("Login");
     } catch (err) {
       console.error("Error logging out", err);

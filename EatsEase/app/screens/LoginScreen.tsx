@@ -9,43 +9,57 @@ const LoginScreen = () => {
     const navigation = useNavigation();
 
     // State variables for managing form inputs and errors
-    const [emailOrUsername, setEmailOrUsername] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
+
     const handleLogin = async () => {
         try {
-            const response = await axiosInstance.post('cd/user/login', {
-                user_name: emailOrUsername,
-                user_password: password 
+            console.log("🔑 Logging in...");
+            
+            // ✅ ล้างค่าเก่าก่อน Login ใหม่ (สำคัญ!)
+            await AsyncStorage.removeItem('token');
+            await AsyncStorage.removeItem('username');
+    
+            const response = await axiosInstance.post('https://eatsease-backend-1jbu.onrender.com/api/user/login', {
+                user_name: username,
+                user_password: password
             });
     
-            // Save Token to AsyncStorage
-            if (response.data.token) {
-                await AsyncStorage.setItem('token', response.data.token);
-            }
-
-            // ต้อง get toekn ของ user มาใหม่ หลังจาก user logout แล้ว login ใหม่
-            
+            console.log("✅ Login response:", response.data);
     
-            // Check if token is saved
-            const savedToken = await AsyncStorage.getItem('token');
-            if (savedToken) {
-                console.log('Login successful:', response.data);
-                navigation.navigate('MainLayout');
+            if (response.data && response.data.token) {
+                // ✅ บันทึก Token และ Username ใหม่ลง AsyncStorage
+                await AsyncStorage.setItem('token', response.data.token);
+                await AsyncStorage.setItem('username', response.data.user);
+    
+                // ✅ ตรวจสอบว่าบันทึกสำเร็จหรือไม่
+                const savedToken = await AsyncStorage.getItem('token');
+                const savedUsername = await AsyncStorage.getItem('username');
+    
+                if (savedToken && savedUsername) {
+                    console.log('🎉 Login successful:', { savedToken, savedUsername });
+                    alert(`เข้าสู่ระบบสำเร็จ! \nบัญชีที่ใช้งาน: ${savedUsername}`);
+                    navigation.navigate('MainLayout'); // ไปหน้า Main
+                } else {
+                    console.error('❌ Token or Username not saved');
+                    alert('เกิดข้อผิดพลาดในการบันทึก Token กรุณาลองใหม่');
+                }
             } else {
-                console.error('Token not saved');
+                console.error('❌ Login failed: No token received');
+                alert('เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่');
             }
     
         } catch (err) {
-            // Handle login error
-            setError('Login failed. Please check your credentials and try again.');
-            console.error('Login error:', err);
-    
-            // แสดง Body ของ Error Response (Debugging)
-            console.log(err.response ? err.response.data : err.message);
+            console.error('❌ Login error:', err);
+            console.error('📜 Error response:', err.response?.data);
+            alert('เข้าสู่ระบบล้มเหลว กรุณาตรวจสอบบัญชีของคุณ');
         }
     };
+    
+    
+    
     
     return (
         <LinearGradient
@@ -69,8 +83,8 @@ const LoginScreen = () => {
                     <TextInput 
                         placeholder="ชื่อบัญชีผู้ใช้" 
                         style={styles.input} 
-                        value={emailOrUsername}
-                        onChangeText={setEmailOrUsername} 
+                        value={username}
+                        onChangeText={setUsername} 
                     />
                     <TextInput 
                         placeholder="รหัสผ่าน" 
