@@ -4,6 +4,7 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import * as Location from 'expo-location'; // 🆕 Import Location API
 import Modal from 'react-native-modal';
 import Header from '../components/Headers';
 
@@ -37,10 +38,34 @@ const MapScreen: React.FC = () => {
     "฿฿฿฿": "500+",
     "฿฿฿฿฿": "1,000+",
   };
+  const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null); // 🆕 User location
 
   useEffect(() => {
     fetchUsernameAndRestaurants();
+    fetchUserLocation();
   }, []);
+
+  // 🆕 Fetch user location using Expo Location API
+  const fetchUserLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission Denied", "Allow location access to use this feature.");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        lat: location.coords.latitude,
+        long: location.coords.longitude,
+      });
+
+      console.log("📍 User Location:", location.coords.latitude, location.coords.longitude);
+
+    } catch (error) {
+      console.error("❌ Error getting user location:", error);
+    }
+  };
 
   const fetchUsernameAndRestaurants = async () => {
     try {
@@ -136,12 +161,25 @@ const MapScreen: React.FC = () => {
         <MapView
           style={styles.map}
           initialRegion={{
-            latitude: restaurants.length > 0 ? restaurants[0].lat : 13.736717,
-            longitude: restaurants.length > 0 ? restaurants[0].long : 100.523186,
+            latitude: userLocation ? userLocation.lat : 13.736717,
+            longitude: userLocation ? userLocation.long : 100.523186,
             latitudeDelta: 0.05,
             longitudeDelta: 0.05,
           }}
+          showsUserLocation={true} // ✅ Enable user location on the map
         >
+          {/* 🔹 User Location Marker */}
+          {/* {userLocation && (
+            <Marker coordinate={{ latitude: userLocation.lat, longitude: userLocation.long }}>
+              <Image 
+                source={require('../../app/image/user_marker.png')} // 🆕 Add a custom user marker image
+                style={{ width: 50, height: 50, resizeMode: 'contain' }}
+              />
+              <Callout>
+                <Text style={styles.userLocationText}>📍 You're here</Text>
+              </Callout>
+            </Marker>
+          )} */}
           {restaurants.map((restaurant, index) => (
             <Marker
               key={index}
@@ -270,4 +308,9 @@ const styles = StyleSheet.create({
   closeButton: { backgroundColor: "#FF6B6B", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },
   buttonText: { color: "white", fontSize: 16, fontWeight: "bold", fontFamily: "Mali-Regular", padding: 5 },
   celebrationImage: { width: 120, height: 120, marginBottom: 10 },
+  userLocationText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+  },
 });

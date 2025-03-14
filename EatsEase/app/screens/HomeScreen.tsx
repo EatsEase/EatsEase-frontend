@@ -215,7 +215,7 @@ const HomeScreen: React.FC = () => {
             <Icon name="cards-heart" size={40} color="#5ECFA6" />
           </View>
 
-          {/* <TouchableOpacity
+          <TouchableOpacity
             style={styles.viewListButton}
             onPress={() => navigation.navigate('YourListScreen', {
               likedMenus,
@@ -223,7 +223,7 @@ const HomeScreen: React.FC = () => {
             })}
           >
             <Text style={styles.viewListText}>เมนูที่ชอบ ({likedMenusCount}/5)</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </>
       )}
     </SafeAreaView>
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: -10,
   },
   viewListText: {
-    color: 'rgba(0, 0, 0, 0.6)',
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Mali-Bold',
