@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         
         {/* AI Feature Icon */}
         <TouchableOpacity onPress={() => setAIModalVisible(true)} style={styles.aiIconContainer}>
-          <Image source={require('../../app/image/bot.png')} style={styles.Icon} />
+          <Image source={require('../../app/image/bot.png')} style={styles.aiIcon} />
         </TouchableOpacity>
       </LinearGradient>
 
