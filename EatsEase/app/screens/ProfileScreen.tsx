@@ -76,22 +76,22 @@ export default function ProfileScreen() {
       <View style={styles.detailsSection}>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>📧</Text>
-          <Text style={styles.detailText}>{userData.user_email || "No Email"}</Text>
+          <Text style={styles.detailText}>{userData.user_email || "ผู้เยี่ยมชม"}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>♀️</Text>
-          <Text style={styles.detailText}>{userData.userProfile.gender || "Not specified"}</Text>
+          <Text style={styles.detailText}>{userData.userProfile.gender || "ไม่ระบุ"}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>🎂</Text>
-          <Text style={styles.detailText}>{ userData.age ? `${userData.age} years` : "Not specified"}</Text>
+          <Text style={styles.detailText}>อายุ { userData.age ? `${userData.age} ปี` : "ไม่ระบุ"}</Text>
         </View>
 
         {/* History */}
         <TouchableOpacity onPress={() => navigation.navigate("History")} style={styles.touchableRow}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>🕒</Text>
-            <Text style={styles.detailText}>History</Text>
+            <Text style={styles.detailText}>ประวัติเมนูอาหาร</Text>
             <Image source={{ uri: "https://cdn-icons-png.flaticon.com/128/130/130884.png" }} style={styles.nextIcon} />
           </View>
         </TouchableOpacity>
@@ -100,7 +100,7 @@ export default function ProfileScreen() {
         <TouchableOpacity onPress={() => navigation.navigate("Preferences")} style={styles.touchableRow}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>⚙️</Text>
-            <Text style={styles.detailText}>Preferences</Text>
+            <Text style={styles.detailText}>การตั้งค่า</Text>
             <Image source={{ uri: "https://cdn-icons-png.flaticon.com/128/130/130884.png" }} style={styles.nextIcon} />
           </View>
         </TouchableOpacity>
@@ -120,11 +120,11 @@ const styles = StyleSheet.create({
   errorMessage: { fontSize: 16, color: "#FF6B6B", fontFamily: "Mali SemiBold" },
   profileSection: { alignItems: "center", marginTop: 20 },
   profileName: { fontSize: 20, fontWeight: "bold", marginTop: 10, fontFamily: "Mali SemiBold" },
-  joinDate: { fontSize: 14, color: "#888", marginTop: 5, fontFamily: "Mali Regular" },
+  joinDate: { fontSize: 14, color: "#888", marginTop: 5, fontFamily: "Mali Regular", padding: 10 },
   detailsSection: { marginTop: 30, paddingHorizontal: 20 },
   detailRow: { flexDirection: "row", alignItems: "center", marginBottom: 15, borderBottomWidth: 1, borderBottomColor: "#E8E8E8", paddingBottom: 10 },
   detailLabel: { fontSize: 20, marginRight: 15 },
-  detailText: { fontSize: 16, fontFamily: "Mali Regular", flex: 1 },
+  detailText: { fontSize: 16, fontFamily: "Mali Regular", flex: 1, padding: 5 },
   nextIcon: { width: 20, height: 20, tintColor: "#888" },
   touchableRow: { width: "100%" },
   logoutButton: { backgroundColor: "#FF6B6B", paddingVertical: 15, paddingHorizontal: 30, borderRadius: 25, alignSelf: "center", marginTop: 30 },

@@ -192,11 +192,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: 'Mali SemiBold',
     textAlign: 'center',
     marginBottom: 20,
     marginTop: 20,
+    padding: 10,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -222,10 +223,11 @@ const styles = StyleSheet.create({
     height: 100,
   },
   cardTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: 'Mali SemiBold',
     textAlign: 'center',
     marginVertical: 5,
+    padding: 5,
   },
   removeButtonContainer: {
     position: 'absolute',

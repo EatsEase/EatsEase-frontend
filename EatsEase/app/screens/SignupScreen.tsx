@@ -273,9 +273,8 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontFamily: 'Mali-Bold',
-        paddingTop: 5,
-        paddingBottom: 10,
         height: 25,
+        padding: 5,
     },
     buttonContainer: {
         flexDirection: 'row',

@@ -99,7 +99,7 @@ const LoginScreen = () => {
 
                     {/* Enter Button */}
                     <TouchableOpacity style={styles.enterButton} onPress={handleLogin}>
-                        <Text style={styles.enterButtonText}>เข้าสู่ระบบ</Text>
+                        <Text style={styles.enterButtonText}>ต่อไป</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -194,12 +194,10 @@ const styles = StyleSheet.create({
     },
     enterButtonText: {
         color: 'white',
-        fontSize: 20,
+        fontSize: 16,
         fontFamily: 'Mali-Bold',
-        paddingTop: 0,
-        paddingBottom: 0,
         height: 30,
-        
+        padding: 5,
     },
     buttonContainer: {
         flexDirection: 'row',
