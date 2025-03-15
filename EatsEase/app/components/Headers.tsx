@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         
         {/* AI Feature Icon */}
         <TouchableOpacity onPress={() => setAIModalVisible(true)} style={styles.aiIconContainer}>
-          <Image source={require('../../app/image/bot.png')} style={styles.aiIcon} />
+          <Image source={require('../../app/image/bot.png')} style={styles.Icon} />
         </TouchableOpacity>
       </LinearGradient>
 
@@ -58,7 +58,11 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>AI Recommended Menu!</Text>
+            {/* Close Icon */}
+            <TouchableOpacity style={styles.closeIcon} onPress={() => setAIModalVisible(false)}>
+              <Image source={require('../../app/image/close.png')} style={styles.closeImageIcon} />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>AI Recommended Menu!</Text>
             <Text style={styles.modalText}>
               🍽 เมนูแนะนำ: {recommendedMenu.name} {"\n"}
               🍽 ร้านแนะนำ: ........... {"\n"}
@@ -78,12 +82,6 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
                 <Text style={styles.MapButtonText}>ไปยังแผนที่</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setAIModalVisible(false)}
-              >
-                <Text style={styles.closeButtonText}>ปิด</Text>
-              </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -116,7 +114,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
   },
-  // Modal Styles
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -130,10 +127,22 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     elevation: 5,
+    position: 'relative',
+  },
+  closeIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 10,
+  },
+  closeImageIcon: {
+    width: 20,
+    height: 15,
   },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+    marginTop: 20,
     marginBottom: 10,
     color: '#333',
     fontFamily: 'Mali-Regular',
@@ -160,20 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Mali-Regular',
     padding: 4,
-  },
-  closeButton: {
-    backgroundColor: '#FE5266',
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginTop: 10,
-  },
-  closeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-    fontFamily: 'Mali-Regular',
-    padding: 3,
   },
   buttonContainer: {
     flexDirection: 'row',

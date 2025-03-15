@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#F5F5F5',
-    borderRadius: 10,
+    borderRadius: 25,
     padding: 15,
     marginVertical: 10,
     marginHorizontal: 16,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#5ECFA6",
     paddingVertical: 8,
     paddingHorizontal: 15,
-    borderRadius: 10,
+    borderRadius: 25,
     alignSelf: "flex-start",
   },
   buttonText: {

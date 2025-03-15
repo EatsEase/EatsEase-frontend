@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     position: 'absolute',
-    borderRadius: 20,
+    borderRadius: 25,
     backgroundColor: '#FFF', // เพิ่มพื้นหลังให้เป็นสีขาวเพื่อความชัดเจน
     // shadowColor: '#000',
     // shadowOpacity: 0.1,
