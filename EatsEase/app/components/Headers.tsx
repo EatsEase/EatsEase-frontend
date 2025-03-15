@@ -14,10 +14,24 @@ interface HeaderProps {
   title: string;
 }
 
+const demoData = [
+  { id: 1, name: 'Strawberry Banana Smoothie' },
+  { id: 2, name: 'Green Detox Smoothie' },
+  { id: 3, name: 'Mango Pineapple Smoothie' },
+  { id: 4, name: 'Berry Protein Shake' },
+  { id: 5, name: 'Avocado Almond Blend' },
+];
+
 const { width } = Dimensions.get('window');
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
   const [isAIModalVisible, setAIModalVisible] = useState(false);
+  const [recommendedMenu, setRecommendedMenu] = useState(demoData[0]);
+
+  const refreshRecommendedMenu = () => {
+    const randomMenu = demoData[Math.floor(Math.random() * demoData.length)];
+    setRecommendedMenu(randomMenu);
+  };
 
   return (
     <>
@@ -44,14 +58,32 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>AI Feature</Text>
-            <Text style={styles.modalText}>This is your AI assistant feature.</Text>
+          <Text style={styles.modalTitle}>AI Recommended Menu!</Text>
+            <Text style={styles.modalText}>
+              🍽 เมนูแนะนำ: {recommendedMenu.name} {"\n"}
+              🍽 ร้านแนะนำ: ........... {"\n"}
+              🍽 สถานที่: ...........
+            </Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.refreshButton}
+                onPress={refreshRecommendedMenu}
+              >
+                <Text style={styles.refreshButtonText}>ลองอีกครั้ง</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.MapButton}
+                // onPress={() => setAIModalVisible(false)}
+              >
+                <Text style={styles.MapButtonText}>ไปยังแผนที่</Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setAIModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+                style={styles.closeButton}
+                onPress={() => setAIModalVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>ปิด</Text>
+              </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -94,33 +126,75 @@ const styles = StyleSheet.create({
   modalContent: {
     width: width * 0.8,
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 25,
     padding: 20,
     alignItems: 'center',
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
+    fontFamily: 'Mali-Regular',
+    paddingBottom: 10,
   },
   modalText: {
     fontSize: 16,
     color: '#555',
     textAlign: 'center',
     marginBottom: 20,
+    fontFamily: 'Mali-Regular',
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  MapButton: {
+    backgroundColor: '#5ECFA6',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  MapButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: 'Mali-Regular',
+    padding: 4,
   },
   closeButton: {
     backgroundColor: '#FE5266',
     borderRadius: 25,
     paddingVertical: 10,
     paddingHorizontal: 20,
+    marginTop: 10,
   },
   closeButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: 'Mali-Regular',
+    padding: 3,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '90%',
+  },
+  refreshButton: {
+    backgroundColor: '#FFA500',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    flex: 1,
+    marginRight: 20,
+    alignItems: 'center',
+  },
+  refreshButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: 'Mali-Regular',
+    padding: 4,
   },
 });
 
