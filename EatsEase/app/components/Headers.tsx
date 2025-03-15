@@ -137,12 +137,12 @@ const styles = StyleSheet.create({
   },
   closeImageIcon: {
     width: 20,
-    height: 15,
+    height: 20,
   },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 20,
+    marginTop: 30,
     marginBottom: 10,
     color: '#333',
     fontFamily: 'Mali-Regular',
