@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
             <TouchableOpacity style={styles.closeIcon} onPress={() => setAIModalVisible(false)}>
               <Image source={require('../../app/image/close.png')} style={styles.closeImageIcon} />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>AI Recommended Menu!</Text>
+            <Text style={styles.modalTitle}>เมนูแนะนำสำหรับมื้อถัดไป!</Text>
             <Text style={styles.modalText}>
               🍽 เมนูแนะนำ: {recommendedMenu.name} {"\n"}
               🍽 ร้านแนะนำ: ........... {"\n"}
@@ -140,18 +140,16 @@ const styles = StyleSheet.create({
     height: 20,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginTop: 30,
-    marginBottom: 10,
     color: '#333',
     fontFamily: 'Mali-Regular',
-    paddingBottom: 10,
+    padding:  10,
   },
   modalText: {
     fontSize: 16,
     color: '#555',
-    textAlign: 'center',
     marginBottom: 20,
     fontFamily: 'Mali-Regular',
     paddingTop: 10,

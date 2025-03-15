@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
@@ -9,31 +9,35 @@ export default function ProfileScreen() {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const storedUsername = await AsyncStorage.getItem("username");
-        if (!storedUsername) {
-          Alert.alert("Error", "No username found. Please log in again.");
-          navigation.navigate("Login");
-          return;
-        }
-
-        console.log("Fetching profile for:", storedUsername);
-
-        const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
-        console.log("User Profile Data:", response.data);
-        setUserData(response.data);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        Alert.alert("Error", "Failed to fetch user profile.");
-      } finally {
-        setLoading(false);
+  const fetchUserProfile = async () => {
+    try {
+      const storedUsername = await AsyncStorage.getItem("username");
+      if (!storedUsername) {
+        Alert.alert("Error", "No username found. Please log in again.");
+        navigation.navigate("Login");
+        return;
       }
-    };
 
-    fetchUserProfile();
-  }, []);
+      console.log("Fetching profile for:", storedUsername);
+
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+      console.log("User Profile Data:", response.data);
+      setUserData(response.data);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      Alert.alert("Error", "Failed to fetch user profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    // ✅ Use useFocusEffect to refresh data every time the screen is visited
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      fetchUserProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
     try {
