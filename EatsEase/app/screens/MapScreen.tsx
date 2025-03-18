@@ -41,11 +41,11 @@ const MapScreen: React.FC = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null); // 🆕 User location
 
   useEffect(() => {
-    fetchUsernameAndRestaurants();
-    fetchUserLocation();
-  }, []);
-
-  // 🆕 Fetch user location using Expo Location API
+    if (userLocation && username) {
+      fetchRestaurants();
+    }
+  }, [userLocation, username]); // ✅ Runs only when both `userLocation` and `username` are set
+  
   const fetchUserLocation = async () => {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -53,37 +53,53 @@ const MapScreen: React.FC = () => {
         Alert.alert("Permission Denied", "Allow location access to use this feature.");
         return;
       }
-
+  
       let location = await Location.getCurrentPositionAsync({});
       setUserLocation({
         lat: location.coords.latitude,
         long: location.coords.longitude,
       });
-
+  
       console.log("📍 User Location:", location.coords.latitude, location.coords.longitude);
-
     } catch (error) {
       console.error("❌ Error getting user location:", error);
     }
   };
-
-  const fetchUsernameAndRestaurants = async () => {
+  
+  const fetchUsername = async () => {
     try {
       const storedUsername = await AsyncStorage.getItem('username');
-      if (!storedUsername) return;
-      setUsername(storedUsername);
-      fetchRestaurants(storedUsername);
+      if (storedUsername) {
+        setUsername(storedUsername);
+      } else {
+        console.warn("⚠️ No username found in AsyncStorage.");
+      }
     } catch (error) {
-      console.error("Error fetching username:", error);
+      console.error("❌ Error fetching username:", error);
     }
   };
-
-  const fetchRestaurants = async (username: string) => {
+  
+  useEffect(() => {
+    fetchUserLocation();
+    fetchUsername();
+  }, []);
+  
+  const fetchRestaurants = async () => {
+    if (!userLocation || !username) {
+      console.warn("⚠️ User location or username not available yet.");
+      return;
+    }
+  
     try {
-      const response = await axios.get(
-        `https://eatsease-backend-1jbu.onrender.com/api/restaurant/query/${username}`
+      const response = await axios.post(
+        `https://eatsease-backend-1jbu.onrender.com/api/restaurant/query`,
+        {
+          user_name: username,
+          user_lat: userLocation.lat,
+          user_long: userLocation.long
+        }
       );
-
+  
       const formattedRestaurants = response.data.map((item: any) => ({
         id: item.restaurant._id,
         restaurant_name: item.restaurant.restaurant_name,
@@ -97,14 +113,15 @@ const MapScreen: React.FC = () => {
         restaurant_menu: item.restaurant.restaurant_menu,
         restaurant_location_link: item.restaurant.restaurant_location_link,
       }));
-
+  
       setRestaurants(formattedRestaurants);
     } catch (error) {
-      console.error("Error fetching restaurants:", error);
+      console.error("❌ Error fetching restaurants:", error);
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleSelectRestaurant = (restaurant: Restaurant) => {
     setSelectedRestaurant(restaurant);
@@ -159,27 +176,20 @@ const MapScreen: React.FC = () => {
         <ActivityIndicator size="large" color="#5ECFA6" style={styles.loadingIndicator} />
       ) : (
         <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: userLocation ? userLocation.lat : 13.736717,
-            longitude: userLocation ? userLocation.long : 100.523186,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
+            style={styles.map}
+            region={userLocation ? {
+              latitude: userLocation.lat,
+              longitude: userLocation.long,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            } : {
+              latitude: 13.736717,
+              longitude: 100.523186,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            }}
           showsUserLocation={true} // ✅ Enable user location on the map
         >
-          {/* 🔹 User Location Marker */}
-          {/* {userLocation && (
-            <Marker coordinate={{ latitude: userLocation.lat, longitude: userLocation.long }}>
-              <Image 
-                source={require('../../app/image/user_marker.png')} // 🆕 Add a custom user marker image
-                style={{ width: 50, height: 50, resizeMode: 'contain' }}
-              />
-              <Callout>
-                <Text style={styles.userLocationText}>📍 You're here</Text>
-              </Callout>
-            </Marker>
-          )} */}
           {restaurants.map((restaurant, index) => (
             <Marker
               key={index}
