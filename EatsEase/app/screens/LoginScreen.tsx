@@ -17,11 +17,7 @@ const LoginScreen = () => {
     const handleLogin = async () => {
         try {
             console.log("🔑 Logging in...");
-            
-            // ✅ ล้างค่าเก่าก่อน Login ใหม่ (สำคัญ!)
-            await AsyncStorage.removeItem('token');
-            await AsyncStorage.removeItem('username');
-    
+
             const response = await axiosInstance.post('https://eatsease-backend-1jbu.onrender.com/api/user/login', {
                 user_name: username,
                 user_password: password
