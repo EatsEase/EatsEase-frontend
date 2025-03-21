@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "typescript",
-    "slug": "typescript",
+    "name": "EatsEase",
+    "slug": "EatsEase",
+    "description": "An app for foodies",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,19 +14,39 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.typescript"
+      "bundleIdentifier": "com.anonymous.typescript",
+      "runtimeVersion": "1.0.0",
+      "newArchEnabled": true 
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "runtimeVersion": {
+        "policy": "sdkVersion"
+      },
+      "newArchEnabled": true,
+      "permissions": [ 
+        "INTERNET",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      "expo-build-properties"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d016ce31-775e-406e-ad72-3af3f91e76dc"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d016ce31-775e-406e-ad72-3af3f91e76dc"
+    }
   }
 }

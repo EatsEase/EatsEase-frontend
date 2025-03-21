@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Header from "../components/Headers";
 
@@ -26,7 +26,7 @@ const HistoryScreen = () => {
 
   const fetchUsernameAndHistory = async () => {
     try {
-      const storedUsername = await AsyncStorage.getItem('username');
+      const storedUsername = await SecureStore.getItemAsync('username');
       if (!storedUsername) {
         console.error("❌ No username found.");
         return;

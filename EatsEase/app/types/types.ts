@@ -17,4 +17,5 @@ type RootStackParamList = {
     Profile: undefined;
     History: undefined;
     MapScreen: { finalizedMenu: string };
+    ErrorScreen: { error: string };
 };

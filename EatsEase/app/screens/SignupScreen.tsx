@@ -4,7 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Dropdown from "../components/DropDown";
 import { useNavigation } from '@react-navigation/native';
 import axiosInstance from '../services/axiosInstance';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+
 
 
 const SignupScreen = () => {
@@ -54,11 +55,13 @@ const SignupScreen = () => {
             console.log("Login response:", loginResponse.data);
     
             if (loginResponse.data) {
-                await AsyncStorage.setItem('token', loginResponse.data.token);
-                await AsyncStorage.setItem('username', loginResponse.data.user);
+                await SecureStore.setItemAsync('token', loginResponse.data.token);
+                await SecureStore.setItemAsync('username', loginResponse.data.user);
                 
-                const savedUsername = await AsyncStorage.getItem('username');
-                const savedToken = await AsyncStorage.getItem('token');
+                const savedToken = await SecureStore.getItemAsync('token');
+                const savedUsername = await SecureStore.getItemAsync('username');
+                
+                
                 if (savedToken && savedUsername) {
                     console.log('Signup and login successful:', loginResponse.data);
                     alert('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ');

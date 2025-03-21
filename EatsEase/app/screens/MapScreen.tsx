@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Linking, Alert } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import * as Location from 'expo-location'; // 🆕 Import Location API
 import Modal from 'react-native-modal';
@@ -68,7 +68,7 @@ const MapScreen: React.FC = () => {
   
   const fetchUsername = async () => {
     try {
-      const storedUsername = await AsyncStorage.getItem('username');
+      const storedUsername = await SecureStore.getItemAsync('username');
       if (storedUsername) {
         setUsername(storedUsername);
       } else {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
 import Header from "../components/Headers";
 
@@ -28,7 +28,7 @@ export default function PreferencesScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storedUsername = await AsyncStorage.getItem("username");
+        const storedUsername = await SecureStore.getItemAsync('username');
         if (!storedUsername) {
           Alert.alert("Error", "No username found. Please log in again.");
           navigation.navigate("Login");

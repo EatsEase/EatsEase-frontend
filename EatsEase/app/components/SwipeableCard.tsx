@@ -117,9 +117,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderRadius: 25,
     backgroundColor: '#FFF', // เพิ่มพื้นหลังให้เป็นสีขาวเพื่อความชัดเจน
-    // shadowColor: '#000',
-    // shadowOpacity: 0.1,
-    // shadowRadius: 10,
     elevation: 5, // เงาสำหรับ Android
   },
   imageContainer: {
@@ -145,19 +142,19 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     width: '100%',
-    padding: 12,
-    // backgroundColor: 'rgba(0, 0, 0, 0.6)', // พื้นหลังโปร่งแสง
+    padding: 8,
     alignItems: 'center',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    backgroundColor: 'rgba(235, 232, 232, 0.9)',
   },
   cardTitleStyle: {
-    color: 'rgba(0, 0, 0, 0.6)',
+    color: 'rgba(47, 47, 47, 0.82)',
     fontSize: 20,
     fontFamily: 'Mali SemiBold',
     textAlign: 'center',
     lineHeight: 30,
     paddingTop: 5,
-    paddingBottom: 0,
+    paddingBottom: 5,
   },
 });

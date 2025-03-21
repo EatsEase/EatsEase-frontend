@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,30 +7,58 @@ import {
   Modal,
   Dimensions,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 interface HeaderProps {
   title: string;
 }
 
-const demoData = [
-  { id: 1, name: 'Strawberry Banana Smoothie' },
-  { id: 2, name: 'Green Detox Smoothie' },
-  { id: 3, name: 'Mango Pineapple Smoothie' },
-  { id: 4, name: 'Berry Protein Shake' },
-  { id: 5, name: 'Avocado Almond Blend' },
-];
-
 const { width } = Dimensions.get('window');
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
   const [isAIModalVisible, setAIModalVisible] = useState(false);
-  const [recommendedMenu, setRecommendedMenu] = useState(demoData[0]);
+  const [recommendedMenu, setRecommendedMenu] = useState<{ name: string; image: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
 
-  const refreshRecommendedMenu = () => {
-    const randomMenu = demoData[Math.floor(Math.random() * demoData.length)];
-    setRecommendedMenu(randomMenu);
+  useEffect(() => {
+    const fetchUsername = async () => {
+      const storedUsername = await SecureStore.getItemAsync('username');
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    };
+    fetchUsername();
+  }, []);
+
+  const fetchRecommendedMenu = async () => {
+    if (!username) {
+      console.error("Username not found");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/recommendation/next_meal/${username}`, {
+        timeout: 10000, // Timeout 10s
+      });
+
+      if (response.data) {
+        setRecommendedMenu({
+          name: response.data.recommended_menu,
+          image: response.data.menu_image,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching recommended menu:", error);
+      setRecommendedMenu(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,9 +70,15 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         style={styles.header}
       >
         <Text style={styles.title}>{title}</Text>
-        
+
         {/* AI Feature Icon */}
-        <TouchableOpacity onPress={() => setAIModalVisible(true)} style={styles.aiIconContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            setAIModalVisible(true);
+            fetchRecommendedMenu(); // Fetch data when modal opens
+          }}
+          style={styles.aiIconContainer}
+        >
           <Image source={require('../../app/image/bot.png')} style={styles.aiIcon} />
         </TouchableOpacity>
       </LinearGradient>
@@ -58,28 +92,30 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            {/* Close Icon */}
-            <TouchableOpacity style={styles.closeIcon} onPress={() => setAIModalVisible(false)}>
-              <Image source={require('../../app/image/close.png')} style={styles.closeImageIcon} />
-            </TouchableOpacity>
             <Text style={styles.modalTitle}>เมนูแนะนำสำหรับมื้อถัดไป!</Text>
-            <Text style={styles.modalText}>
-              🍽 เมนูแนะนำ: {recommendedMenu.name} {"\n"}
-              🍽 ร้านแนะนำ: ........... {"\n"}
-              🍽 สถานที่: ...........
-            </Text>
+
+            {loading ? (
+              <ActivityIndicator size="large" color="#5ECFA6" />
+            ) : recommendedMenu ? (
+              <>
+                <Image source={{ uri: recommendedMenu.image }} style={styles.menuImage} />
+                <Text style={styles.modalText}>
+                  🍽 เมนูแนะนำ: {recommendedMenu.name} {"\n"}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.modalText}>⚠️ ไม่สามารถดึงข้อมูลเมนูแนะนำได้</Text>
+            )}
+
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.refreshButton}
-                onPress={refreshRecommendedMenu}
+                onPress={fetchRecommendedMenu}
               >
                 <Text style={styles.refreshButtonText}>ลองอีกครั้ง</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.MapButton}
-                // onPress={() => setAIModalVisible(false)}
-              >
-                <Text style={styles.MapButtonText}>ไปยังแผนที่</Text>
+              <TouchableOpacity style={styles.closeButton} onPress={() => setAIModalVisible(false)}>
+                <Text style={styles.closeButtonText}>กลับหน้าหลัก</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -129,20 +165,10 @@ const styles = StyleSheet.create({
     elevation: 5,
     position: 'relative',
   },
-  closeIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    padding: 10,
-  },
-  closeImageIcon: {
-    width: 20,
-    height: 20,
-  },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 30,
+    marginTop: 10,
     color: '#333',
     fontFamily: 'Mali-Regular',
     padding:  10,
@@ -155,13 +181,20 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 10,
   },
-  MapButton: {
-    backgroundColor: '#5ECFA6',
+  menuImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  closeButton: {
+    backgroundColor: '#FE665D',
     borderRadius: 25,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  MapButtonText: {
+  closeButtonText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
@@ -172,6 +205,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '90%',
+    marginTop: -15,
   },
   refreshButton: {
     backgroundColor: '#FFA500',

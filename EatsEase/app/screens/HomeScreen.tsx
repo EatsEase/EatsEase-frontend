@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, StyleSheet, View, Alert, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import SwipeableCard from '../components/SwipeableCard';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StackNavigationProp } from '@react-navigation/stack';
-import homeScreenData from '../services/homeScreenData';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { homeScreenData } from '../services/homeScreenData';
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
 interface CardItem {
@@ -26,38 +26,57 @@ const HomeScreen: React.FC = () => {
   const [username, setUsername] = useState<string | null>(null);
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const storedUsername = await AsyncStorage.getItem('username');
-        if (!storedUsername) {
-          Alert.alert('Error', 'No username found. Please log in again.');
-          navigation.navigate('Login');
-          return;
-        }
-        setUsername(storedUsername);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const storedUsername = await SecureStore.getItemAsync('username');
+      console.log('Stored username:', storedUsername);
 
-        const data = await homeScreenData();
-        if (data) {
-          const transformedData: CardItem[] = data.map((item: any) => ({
-            id: item._id,
-            menuTitle: item.menu_name,
-            backgroundColor: '#d9B382',
-            image: item.menu_image,
-          }));
-          setSampleCardArray(transformedData.reverse());
-        }
-      } catch (error) {
-        console.error('Error fetching home screen data:', error);
-      } finally {
-        setLoading(false);
+      if (!storedUsername) {
+        Alert.alert('Error', 'No username found. Please log in again.');
+        navigation.navigate('Login');
+        return;
       }
-    };
+      setUsername(storedUsername);
 
+      const data = await homeScreenData(storedUsername);
+      console.log('Fetched menu data:', data);
+
+      if (data && data.length > 0) {
+        const transformedData: CardItem[] = data.map((item: any) => ({
+          id: item._id,
+          menuTitle: item.menu_name,
+          backgroundColor: '#d9B382',
+          image: item.menu_image,
+        }));
+        setSampleCardArray(transformedData.reverse());
+      } else {
+        console.warn('⚠️ No new recommended menus available.');
+      }
+    } catch (error) {
+      console.error('Error fetching home screen data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigation]);
+
+  useEffect(() => {
     fetchData();
-    fetchUserProfile();
-  }, []);
+  }, [fetchData]);
 
+  const removeCard = (id: string) => {
+    setSampleCardArray((prev) => {
+      const updatedArray = prev.filter((item) => item.id !== id);
+
+      // ✅ ถ้าเมนูหมด และไม่อยู่ใน loading state ให้ fetch ใหม่
+      if (updatedArray.length === 0 && !loading) {
+        console.log("🟡 All recommended menus used, fetching more...");
+        fetchData();
+      }
+      return updatedArray;
+    });
+  };
+  
   const fetchCurrentLikedMenuCount = async (username: string) => {
     try {
       const response = await axios.get(
@@ -146,23 +165,18 @@ const HomeScreen: React.FC = () => {
   
       const updatedLikedMenus = [...likedMenus, item];
       setLikedMenus(updatedLikedMenus);
-  
-      // ✅ อัปเดต liked_menu ทั้งหมด และ fetch จำนวนเมนูที่ชอบ
       updateUserMenus(updatedLikedMenus);
-  
-      removeCard(item.id);
     } else if (direction === 'Left') {
       console.log('Swiped Left:', item.menuTitle);
   
       const updatedDislikedMenus = [...dislikedMenus, item];
       setDislikedMenus(updatedDislikedMenus);
-  
-      // ✅ อัปเดต disliked_menu ทีละเมนู
       updateUserMenus(likedMenus, item);
-  
-      removeCard(item.id);
     }
+  
+    removeCard(item.id);
   };
+  
   
   // ✅ ใช้ useEffect() ตรวจสอบ likedMenusCount และ navigate ไปหน้า YourListScreen ถ้าครบ 5 เมนู
   useEffect(() => {
@@ -177,19 +191,6 @@ const HomeScreen: React.FC = () => {
       });
     }
   }, [likedMenusCount]);
-  
-
-  const removeCard = (id: string) => {
-    setSampleCardArray((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (username) {
-        fetchCurrentLikedMenuCount(username);
-      }
-    }, [username])
-  );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -198,15 +199,19 @@ const HomeScreen: React.FC = () => {
       ) : (
         <>
           <View style={styles.container}>
-            {sampleCardArray.map((item) => (
-              <SwipeableCard
-                key={item.id}
-                item={item}
-                removeCard={() => removeCard(item.id)}
-                swipedDirection={(dir) => handleSwipe(dir, item)}
-                image={item.image}
-              />
-            ))}
+            {sampleCardArray.length === 0 ? (
+              <Text style={{ fontSize: 18, color: '#555' }}>⏳ กำลังโหลดเมนูเพิ่ม...</Text>
+            ) : (
+              sampleCardArray.map((item) => (
+                <SwipeableCard
+                  key={item.id}
+                  item={item}
+                  removeCard={() => removeCard(item.id)}
+                  swipedDirection={(dir) => handleSwipe(dir, item)}
+                  image={item.image}
+                />
+              ))
+            )}
           </View>
 
           <View style={styles.iconContainer}>
@@ -262,3 +267,4 @@ const styles = StyleSheet.create({
     padding: 5,
   },
 });
+

@@ -1,13 +1,19 @@
 import axios from "axios";
 
-const homeScreenData = async () => {
+export const homeScreenData = async (username: string) => {
   try {
-    const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/menu/all');
-    return response.data; // Return fetched data
-    console.log(response.data);
+    if (!username) {
+      throw new Error("Username is required for fetching menu data.");
+    }
+
+    console.log(`Fetching menu data for: ${username}`); // Debugging
+
+    const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/recommendation/menu/${username}`);
+
+    console.log('API Response:', response.data); // Debugging
+    return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching menu data:', error);
+    return []; // คืนค่า array ว่างถ้า error
   }
 };
-
-export default homeScreenData;

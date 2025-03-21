@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
 interface CardItem {
@@ -44,7 +43,7 @@ const YourListScreen: React.FC = () => {
   // 🔹 ดึง username จาก AsyncStorage และ fetch liked menus
   const fetchUsernameAndMenus = async () => {
     try {
-      const storedUsername = await AsyncStorage.getItem('username');
+      const storedUsername = await SecureStore.getItemAsync('username');
       if (!storedUsername) {
         Alert.alert('Error', 'No username found. Please log in again.');
         navigation.navigate('Login');

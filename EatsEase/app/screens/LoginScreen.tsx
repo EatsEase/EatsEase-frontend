@@ -3,7 +3,8 @@ import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "reac
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import axiosInstance from '../services/axiosInstance';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+
 
 const LoginScreen = () => {
     const navigation = useNavigation();
@@ -26,13 +27,12 @@ const LoginScreen = () => {
             console.log("✅ Login response:", response.data);
     
             if (response.data && response.data.token) {
-                // ✅ บันทึก Token และ Username ใหม่ลง AsyncStorage
-                await AsyncStorage.setItem('token', response.data.token);
-                await AsyncStorage.setItem('username', response.data.user);
-    
-                // ✅ ตรวจสอบว่าบันทึกสำเร็จหรือไม่
-                const savedToken = await AsyncStorage.getItem('token');
-                const savedUsername = await AsyncStorage.getItem('username');
+                await SecureStore.setItemAsync('token', response.data.token);
+                await SecureStore.setItemAsync('username', response.data.user);
+                
+                const savedToken = await SecureStore.getItemAsync('token');
+                const savedUsername = await SecureStore.getItemAsync('username');
+                
     
                 if (savedToken && savedUsername) {
                     console.log('🎉 Login successful:', { savedToken, savedUsername });
@@ -50,11 +50,10 @@ const LoginScreen = () => {
         } catch (err) {
             console.error('❌ Login error:', err);
             console.error('📜 Error response:', err.response?.data);
-            alert('เข้าสู่ระบบล้มเหลว กรุณาตรวจสอบบัญชีของคุณ');
+            console.error('🔑 Request data:', err.response?.config.data);
+            alert('ชื่อบัญชีผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         }
     };
-    
-    
     
     
     return (

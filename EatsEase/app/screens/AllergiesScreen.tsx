@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, Act
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store';
 import allergiesScreenData from "../services/allergiesScreendata"; // Import data function
 
 const AllergiesScreen = () => {
@@ -17,7 +17,7 @@ const AllergiesScreen = () => {
         const initializeUserProfile = async () => {
             try {
                 // Retrieve username from AsyncStorage
-                const storedUsername = await AsyncStorage.getItem("username");
+                const storedUsername = await SecureStore.getItemAsync('username');
                 if (!storedUsername) {
                     Alert.alert("Error", "No username found. Please log in again.");
                     navigation.navigate("Login");

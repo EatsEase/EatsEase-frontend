@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import * as SecureStore from 'expo-secure-store';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -11,7 +11,7 @@ export default function ProfileScreen() {
 
   const fetchUserProfile = async () => {
     try {
-      const storedUsername = await AsyncStorage.getItem("username");
+      const storedUsername = await SecureStore.getItemAsync("username");
       if (!storedUsername) {
         Alert.alert("Error", "No username found. Please log in again.");
         navigation.navigate("Login");
@@ -41,8 +41,8 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("token");
-      await AsyncStorage.removeItem('username');
+      await SecureStore.deleteItemAsync('token');
+      await SecureStore.deleteItemAsync('username');
 
       console.log("Logged out successfully");
       
