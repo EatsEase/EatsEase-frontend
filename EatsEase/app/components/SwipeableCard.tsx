@@ -7,7 +7,7 @@ interface CardItem {
   id: string;
   menuTitle: string;
   backgroundColor: string;
-  image?: string; // ✅ เปลี่ยนจาก any เป็น string (URL ของภาพ)
+  image?: string; // ✅ เปลี่ยนจาก any เป็น string (URL ของภาพ), ? หมายถึงไม่จำเป็นต้องมี
 }
 interface SwipeableCardProps {
   item: CardItem;

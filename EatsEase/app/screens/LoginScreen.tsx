@@ -13,9 +13,11 @@ const LoginScreen = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
 
     const handleLogin = async () => {
+        setLoading(true);
         try {
             console.log("🔑 Logging in...");
 
@@ -32,7 +34,6 @@ const LoginScreen = () => {
                 
                 const savedToken = await SecureStore.getItemAsync('token');
                 const savedUsername = await SecureStore.getItemAsync('username');
-                
     
                 if (savedToken && savedUsername) {
                     console.log('🎉 Login successful:', { savedToken, savedUsername });
@@ -52,6 +53,8 @@ const LoginScreen = () => {
             console.error('📜 Error response:', err.response?.data);
             console.error('🔑 Request data:', err.response?.config.data);
             alert('ชื่อบัญชีผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        } finally {
+            setLoading(false);
         }
     };
     
@@ -93,8 +96,8 @@ const LoginScreen = () => {
                     {error ? <Text style={styles.error}>{error}</Text> : null}
 
                     {/* Enter Button */}
-                    <TouchableOpacity style={styles.enterButton} onPress={handleLogin}>
-                        <Text style={styles.enterButtonText}>ต่อไป</Text>
+                    <TouchableOpacity style={styles.enterButton} onPress={handleLogin} disabled={loading}>
+                        <Text style={styles.enterButtonText}>{loading ? 'กำลังโหลด...' : 'ต่อไป'}</Text>
                     </TouchableOpacity>
                 </View>
 
