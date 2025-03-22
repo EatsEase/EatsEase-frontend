@@ -1,39 +1,114 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { MultipleSelectList } from 'react-native-dropdown-select-list'
-
-const categories = [
-  "Fast Food", "Vegan", "Dessert", "BBQ", "Sushi",
-  "Pizza", "Burgers", "Seafood", "Salad", "Beverages",
-  "Pasta", "Grill", "Breakfast", "Steak", "Chicken",
-  "Chinese", "Mexican", "Indian", "Thai", "Japanese",
-  "Korean", "Italian", "French", "German", "Greek",
-  "Spanish", "Turkish", "Middle Eastern", "African", "Caribbean",
-];
-
+import axios from "axios";
+import * as SecureStore from 'expo-secure-store';
 
 const FirstPreferences = () => {
+    const [categories, setCategories] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [username, setUsername] = useState<string | null>(null);
+    const navigation = useNavigation();
+
+    useEffect(() => {
+        const initializeUserProfile = async () => {
+            try {
+                // Get the stored username correctly
+                const storedUsername = await SecureStore.getItemAsync('username');
+                if (!storedUsername) {
+                    Alert.alert("Error", "No username found. Please log in again.");
+                    navigation.navigate("Login");
+                    return;
+                }
+                setUsername(storedUsername); // Store username in state
+
+                // Check if user profile exists
+                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+                console.log("User Profile Data:", response.data);
+
+                // Set existing food preferences
+                setSelectedCategories(response.data.userProfile.food_preferences || []);
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+
+                if (error.response?.status === 404) {
+                    console.log("User profile not found. Creating new profile...");
+
+                    // Create user profile if not found
+                    await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/userProfile`, {
+                        user_name: username,
+                        food_preferences: [],
+                        allergies: [],
+                        liked_menu: [],
+                        disliked_menu: [],
+                        distance_in_km_preference: "5 km",
+                        price_range: "฿",
+                    });
+
+                    console.log("User profile created successfully!");
+                } else {
+                    Alert.alert("Error", "Failed to fetch user profile.");
+                }
+            }
+        };
+
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/category/all');
+                const categoryNames = response.data.map((item: { category_name: string }) => item.category_name);
+                setCategories(categoryNames);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                Alert.alert("Error", "Failed to fetch categories.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initializeUserProfile();
+        fetchCategories();
+    }, []);
 
     const toggleCategory = (category: string) => {
-        setSelectedCategories(prevState => 
+        setSelectedCategories(prevState =>
             prevState.includes(category)
                 ? prevState.filter(item => item !== category) // Deselect if selected
                 : [...prevState, category] // Add if not selected
         );
     };
 
-    const navigation = useNavigation();
+    const handleSubmit = async () => {
+        if (!username) {
+            Alert.alert("Error", "No username found. Please log in again.");
+            return;
+        }
 
-    const handleSubmit = () => {
-        if (selectedCategories.length >= 3) {
-            // Access the selected data here
-            Alert.alert("Selected Categories", JSON.stringify(selectedCategories));
-            navigation.navigate('AllergiesScreen'); 
-        } else {
-            Alert.alert("Error", "Please select at least 3 categories.");
+        if (selectedCategories.length < 3) {
+            Alert.alert("Error", "Please select at least 3 food categories.");
+            return;
+        }
+
+        try {
+            // Ensure user profile exists before updating
+            await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
+
+            // PUT request to update food_preferences
+            const response = await axios.put(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`, {
+                food_preferences: selectedCategories, // Update food preferences
+            });
+
+            if (response.status === 200) {
+                Alert.alert("Success", "Preferences updated successfully!");
+                console.log("Preferences updated successfully:", response.data);
+                navigation.navigate('AllergiesScreen'); // Navigate to the next screen
+            } else {
+                throw new Error("Failed to update preferences");
+            }
+        } catch (error) {
+            console.error("Error updating preferences:", error);
+            Alert.alert("Error", "Could not update preferences. Please try again.");
         }
     };
 
@@ -46,37 +121,39 @@ const FirstPreferences = () => {
             {/* Header */}
             <View style={styles.header}>
                 <Image source={require('../../app/image/logo.png')}
-                    resizeMode="contain" 
-                    style={styles.logo} 
+                    resizeMode="contain"
+                    style={styles.logo}
                 />
                 <Text style={styles.textH1}>EatsEase</Text>
             </View>
 
             {/* Footer */}
             <View style={styles.footer}>
-                <Text style={styles.textH3}>Welcome</Text>
-                <Text style={styles.textH5}>Select at least 3 categories</Text>
+                <Text style={styles.textH3}>เลือกอาหารที่ชอบอย่างน้อย 3 ประเภท</Text>
 
-                {/* Category Grid - wrapped in ScrollView */}
-                <ScrollView contentContainerStyle={styles.gridContainer}>
-                    {categories.map((category, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={[
-                                styles.categoryBox,
-                                selectedCategories.includes(category) && styles.selectedCategoryBox
-                            ]}
-                            onPress={() => toggleCategory(category)}
-                        >
-                            <Text style={[
-                                styles.categoryText,
-                                selectedCategories.includes(category) && styles.selectedCategoryText
-                            ]}>
-                                {category}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                {loading ? (
+                    <ActivityIndicator size="large" color="#FD3B71" />
+                ) : (
+                    <ScrollView contentContainerStyle={styles.gridContainer}>
+                        {categories.map((category, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={[
+                                    styles.categoryBox,
+                                    selectedCategories.includes(category) && styles.selectedCategoryBox
+                                ]}
+                                onPress={() => toggleCategory(category)}
+                            >
+                                <Text style={[
+                                    styles.categoryText,
+                                    selectedCategories.includes(category) && styles.selectedCategoryText
+                                ]}>
+                                    {category}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
 
                 {/* "Next" Button */}
                 <TouchableOpacity
@@ -87,7 +164,7 @@ const FirstPreferences = () => {
                     onPress={handleSubmit}
                     disabled={selectedCategories.length < 3}
                 >
-                    <Text style={styles.enterButtonText}>Next</Text>
+                    <Text style={styles.enterButtonText}>ต่อไป</Text>
                 </TouchableOpacity>
             </View>
         </LinearGradient>
@@ -95,6 +172,7 @@ const FirstPreferences = () => {
 }
 
 export default FirstPreferences;
+
 
 const styles = StyleSheet.create({
     container: {
@@ -110,17 +188,13 @@ const styles = StyleSheet.create({
         paddingLeft: 100,
     },
     textH3: {
-        fontSize: 30,
+        fontSize: 20,
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
-    },
-    textH5: {
-        fontSize: 16,
-        color: 'gray',
-        fontFamily: 'Jua Regular',
-        textAlign: 'center',
-        marginTop: 20,
+        paddingTop: 10,
+        paddingBottom: 40,
+        height: 20,
     },
     logo: {
         width: 90,
@@ -149,26 +223,30 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         marginTop: 20,
-        paddingBottom: 20, // Optional, add padding at the bottom for smoother scrolling
+        paddingBottom: 20,
     },
     categoryBox: {
         backgroundColor: '#d9d9d9',
-        padding: 15,
+        paddingVertical: 15,
+        paddingHorizontal: 10,
         borderRadius: 10,
         margin: 5,
         alignItems: 'center',
         justifyContent: 'center',
-        flexBasis: '28%', // Flexible width to adjust based on screen size
-        minWidth: 100, // Minimum width for long text
-        flexShrink: 1, // Allow shrinking for longer text
+        alignSelf: 'flex-start',
+        minWidth: 100,
+        maxWidth: '45%',
     },
     selectedCategoryBox: {
         backgroundColor: '#FD3B71',
     },
     categoryText: {
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
+        flexWrap: 'wrap',
+        minWidth: 80,
+        maxWidth: '100%',
     },
     selectedCategoryText: {
         color: 'white',
@@ -183,6 +261,6 @@ const styles = StyleSheet.create({
     enterButtonText: {
         color: 'white',
         fontSize: 20,
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
     },
 });

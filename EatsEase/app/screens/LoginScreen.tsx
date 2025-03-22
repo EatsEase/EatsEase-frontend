@@ -3,45 +3,59 @@ import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "reac
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import axiosInstance from '../services/axiosInstance';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+
 
 const LoginScreen = () => {
     const navigation = useNavigation();
 
     // State variables for managing form inputs and errors
-    const [emailOrUsername, setEmailOrUsername] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
+
     const handleLogin = async () => {
         try {
-            const response = await axiosInstance.post('/login', {
-                emailOrUsername,
-                password,
+            console.log("🔑 Logging in...");
+
+            const response = await axiosInstance.post('https://eatsease-backend-1jbu.onrender.com/api/user/login', {
+                user_name: username,
+                user_password: password
             });
     
-            // Save the token to AsyncStorage
-            if (response.data.token) {
-                await AsyncStorage.setItem('token', response.data.token);
-            }
+            console.log("✅ Login response:", response.data);
     
-            // Check if token is saved successfully
-            const savedToken = await AsyncStorage.getItem('token');
-            if (savedToken) {
-                console.log('Login successful:', response.data);
-                navigation.navigate('FirstPreferences'); // Navigate to preferences or home screen
+            if (response.data && response.data.token) {
+                await SecureStore.setItemAsync('token', response.data.token);
+                await SecureStore.setItemAsync('username', response.data.user);
+                
+                const savedToken = await SecureStore.getItemAsync('token');
+                const savedUsername = await SecureStore.getItemAsync('username');
+                
+    
+                if (savedToken && savedUsername) {
+                    console.log('🎉 Login successful:', { savedToken, savedUsername });
+                    alert(`เข้าสู่ระบบสำเร็จ! \nบัญชีที่ใช้งาน: ${savedUsername}`);
+                    navigation.navigate('MainLayout'); // ไปหน้า Main
+                } else {
+                    console.error('❌ Token or Username not saved');
+                    alert('เกิดข้อผิดพลาดในการบันทึก Token กรุณาลองใหม่');
+                }
             } else {
-                console.error('Token not saved');
+                console.error('❌ Login failed: No token received');
+                alert('เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่');
             }
     
         } catch (err) {
-            // Handle login error
-            setError('Login failed. Please check your credentials and try again.');
-            console.error('Login error:', err);
+            console.error('❌ Login error:', err);
+            console.error('📜 Error response:', err.response?.data);
+            console.error('🔑 Request data:', err.response?.config.data);
+            alert('ชื่อบัญชีผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         }
     };
     
-
+    
     return (
         <LinearGradient
             colors={['#FD3B71', '#FE5266', '#FE665D', '#FE5266', '#FD3B71']}
@@ -59,16 +73,16 @@ const LoginScreen = () => {
 
             {/* Footer */}
             <View style={styles.footer}>
-                <Text style={styles.textH3}>Welcome</Text>
+                <Text style={styles.textH3}>ยินดีต้อนรับ</Text>
                 <View style={styles.form}>
                     <TextInput 
-                        placeholder="Enter your email or username" 
+                        placeholder="ชื่อบัญชีผู้ใช้" 
                         style={styles.input} 
-                        value={emailOrUsername}
-                        onChangeText={setEmailOrUsername} 
+                        value={username}
+                        onChangeText={setUsername} 
                     />
                     <TextInput 
-                        placeholder="Enter your password" 
+                        placeholder="รหัสผ่าน" 
                         style={styles.input}
                         secureTextEntry
                         value={password}
@@ -80,7 +94,7 @@ const LoginScreen = () => {
 
                     {/* Enter Button */}
                     <TouchableOpacity style={styles.enterButton} onPress={handleLogin}>
-                        <Text style={styles.enterButtonText}>Enter</Text>
+                        <Text style={styles.enterButtonText}>ต่อไป</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -89,13 +103,13 @@ const LoginScreen = () => {
                     {/* Login Button navigate to LoginScreen */}
                     <TouchableOpacity style={styles.loginButton}
                         onPress={() => navigation.navigate('Login')}>
-                        <Text style={styles.enterButtonText}>Login</Text>
+                        <Text style={styles.enterButtonText}>เข้าสู่ระบบ</Text>
                     </TouchableOpacity>
 
                     {/* Sign up button navigate to SignupScreen */}
                     <TouchableOpacity style={styles.signUpButton}
                         onPress={() => navigation.navigate('Signup')}>
-                        <Text style={styles.enterButtonText}>Sign up</Text>
+                        <Text style={styles.enterButtonText}>ลงทะเบียน</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -121,8 +135,11 @@ const styles = StyleSheet.create({
     textH3: {
         fontSize: 30,
         color: 'black',
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         textAlign: 'center',
+        paddingTop: 0,
+        paddingBottom: 0,
+        height: 50,
     },
     logo: {
         width: 90,
@@ -148,17 +165,19 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between', // Ensures form and buttons are spaced well
     },
     form: {
-        marginTop: 20,
+        marginTop: 10,
         paddingHorizontal: 10,
         flex: 1, // Take available space
     },
     input: {
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
         fontSize: 20,
         borderBottomWidth: 2,
         borderBottomColor: '#d9d9d9',
         padding: 5,
         paddingTop: 30,
+        paddingBottom: 0,
+        height: 60,
     },
     enterButton: {
         backgroundColor: '#5ECFA6',
@@ -170,8 +189,10 @@ const styles = StyleSheet.create({
     },
     enterButtonText: {
         color: 'white',
-        fontSize: 20,
-        fontFamily: 'Jua Regular',
+        fontSize: 16,
+        fontFamily: 'Mali-Bold',
+        height: 30,
+        padding: 5,
     },
     buttonContainer: {
         flexDirection: 'row',

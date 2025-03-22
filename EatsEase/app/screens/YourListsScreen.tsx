@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { useRoute } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, Alert } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 interface CardItem {
   id: string;
@@ -9,69 +10,178 @@ interface CardItem {
   imageUrl: string;
 }
 
-const initialSelectedMenus: CardItem[] = [
-  { id: '1', menuTitle: 'hahahaha', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '2', menuTitle: 'ข้าวผัดต้มยำทะเล', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '3', menuTitle: 'ข้าวกะเพราหมูกรอบ + ไข่ดาว', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '4', menuTitle: 'หมาล่าทั่ง', imageUrl: 'https://via.placeholder.com/150' },
-  { id: '5', menuTitle: 'ข้าวหน้าปลาไหล + ซุปมิโสะ', imageUrl: 'https://via.placeholder.com/150' },
-];
-
-
 const YourListScreen: React.FC = () => {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
-  const [menus, setMenus] = useState<CardItem[]>(initialSelectedMenus);
+  const [menus, setMenus] = useState<CardItem[]>([]);
+  const [username, setUsername] = useState<string | null>(null);
+  const navigation = useNavigation();
 
-  const handleCardPress = (id: string) => {
-    setSelectedCard(id);
+  // 🔹 ฟังก์ชันดึงเมนูที่ชอบจาก backend
+  const fetchLikedMenus = async (username: string) => {
+    try {
+      console.log("📥 Fetching liked menus...");
+      const response = await axios.get(
+        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${username}`
+      );
+
+      console.log("✅ Liked Menus Response:", response.data);
+
+      if (response.data && response.data.menu_list) {
+        setMenus(
+          response.data.menu_list.map((menu: any, index: number) => ({
+            id: String(index + 1), // ใช้ index เป็น id ชั่วคราว
+            menuTitle: menu.menu_name,
+            imageUrl: menu.menu_image,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('❌ Error fetching liked menus:', error);
+    }
   };
 
-  const handleRemove = (id: string) => {
-    setMenus(prevMenus => prevMenus.filter(menu => menu.id !== id));
-    if (selectedCard === id) {
-      setSelectedCard(null);
+  // 🔹 ดึง username จาก AsyncStorage และ fetch liked menus
+  const fetchUsernameAndMenus = async () => {
+    try {
+      const storedUsername = await SecureStore.getItemAsync('username');
+      if (!storedUsername) {
+        Alert.alert('Error', 'No username found. Please log in again.');
+        navigation.navigate('Login');
+        return;
+      }
+      setUsername(storedUsername);
+      fetchLikedMenus(storedUsername);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+  // ✅ ใช้ useFocusEffect เพื่อ fetch ข้อมูลทุกครั้งที่เข้าหน้านี้
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsernameAndMenus();
+    }, [])
+  );
+
+  // 🔹 ฟังก์ชันลบเมนูที่ชอบ
+  const handleRemove = async (menu: CardItem) => {
+    if (!username) {
+      Alert.alert('Error', 'No username found. Please log in again.');
+      return;
+    }
+
+    try {
+      console.log(`📤 Sending DELETE request to remove menu: ${menu.menuTitle}`);
+
+      const response = await axios.delete(
+        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${username}`,
+        { data: { menu_name: menu.menuTitle } }
+      );
+
+      console.log("✅ DELETE Response:", response.data);
+
+      // 🔄 Fetch ข้อมูลใหม่จาก backend หลังจากลบ
+      fetchLikedMenus(username);
+
+      Alert.alert("Success", `Removed ${menu.menuTitle} from liked menus.`);
+    } catch (error) {
+      console.error("❌ Error removing liked menu:", error.response?.data || error);
+      Alert.alert("Error", "Could not remove menu. Please try again.");
+    }
+  };
+  const handleNext = async () => {
+    if (!selectedCard || !username) return;
+  
+    // 🔹 หา `menuTitle` ตาม `selectedCard` (id)
+    const selectedMenuItem = menus.find(menu => menu.id === selectedCard);
+    const finalizedMenu = selectedMenuItem ? selectedMenuItem.menuTitle : null;
+  
+    if (!finalizedMenu) {
+      Alert.alert("Error", "ยังไม่ได้เลือกเมนูที่ชอบ");
+      return;
+    }
+  
+    try {
+      console.log(`📤 Sending finalized menu: ${finalizedMenu} for ${username}`);
+  
+      const response = await axios.post(
+        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/finalized/menu/${username}`,
+        { finalized_menu: finalizedMenu }
+      );
+  
+      console.log("✅ Finalized Menu Response:", response.data);
+  
+      // 🔄 Navigate to MapScreen after successful update
+      navigation.navigate('MapScreen');
+  
+    } catch (error) {
+      console.error("❌ Error finalizing menu:", error.response.status);
+      Alert.alert("Error", "Could not finalize menu. Please try again.");
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Select 1 menu</Text>
+      <Text style={styles.title}>เลือกเมนูที่ใช่ที่สุดสำหรับคุณ! (สูงสุด 1)</Text>
       <View style={styles.gridContainer}>
-        {menus.map((item) => ( // Change from selectedMenus to menus
-          <TouchableOpacity
-            key={item.id}
-            style={[
-              styles.card,
-              selectedCard === item.id && styles.selectedCard, // Highlight selected card
-            ]}
-            onPress={() => handleCardPress(item.id)}
-          >
-            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-            <Text style={styles.cardTitle}>{item.menuTitle}</Text>
-            <TouchableOpacity style={styles.removeIcon} onPress={() => handleRemove(item.id)}>
-              <Icon name="minus-circle" size={25} color="red" />
+        {menus.length > 0 ? (
+          menus.map((item) => (
+        <TouchableOpacity
+          key={item.id}
+          style={[
+            styles.card,
+            selectedCard === item.id && styles.selectedCard,
+          ]}
+          onPress={() => setSelectedCard(item.id)}
+        >
+          {/* Image Component */}
+          <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+
+          {/* Absolute Positioned Remove Button */}
+          <View style={styles.removeButtonContainer}>
+            <TouchableOpacity style={styles.removeIcon} onPress={() => handleRemove(item)}>
+              <Image source={require('../../app/image/minus.png')} style={styles.removeImage} />
             </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+          </View>
+
+          {/* Menu Title */}
+          <Text style={styles.cardTitle}>{item.menuTitle}</Text>
+        </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.centerMessage}>
+            <Text style={styles.emptyMessage}>ยังไม่มีเมนูที่ถูกใจหรอ?!</Text>
+            <Text style={styles.emptyMessage}>"ชอบ" ก็ปัดขวาเลย!</Text>
+            <Text style={styles.emptyMessage}>"ไม่ถูกใจ" ก็ปัดซ้ายได้!</Text>
+            <Image source={require('../../app/image/bored.png')} style={styles.boredImage} />
+            <TouchableOpacity style={styles.swipeButton} onPress={() => navigation.navigate('HomeScreen')}>
+              <Text style={styles.swipeButtonText}>คลิกเพื่อปัด!</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
-        {/* Next Button */}
-        <View style={styles.buttonContainer}>
+      {/* Next Button */}
+      {menus.length > 0 && (
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[
             styles.nextButton,
-            !selectedCard && styles.disabledButton, // Apply disabled style if no card is selected
+            { backgroundColor: selectedCard ? '#5ECFA6' : 'gray' } // ✅ เปลี่ยนสีปุ่มตามเงื่อนไข
           ]}
+          onPress={handleNext}
           disabled={!selectedCard}
-          >
-          <Text style={styles.nextButtonText}>Next</Text>
+        >
+          <Text style={styles.nextButtonText}>ยืนยัน</Text>
         </TouchableOpacity>
       </View>
+    )}
     </SafeAreaView>
   );
-};
+}
 
 export default YourListScreen;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -81,11 +191,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: 'Mali SemiBold',
     textAlign: 'center',
     marginBottom: 20,
     marginTop: 20,
+    padding: 10,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -111,16 +222,38 @@ const styles = StyleSheet.create({
     height: 100,
   },
   cardTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: 'Mali SemiBold',
     textAlign: 'center',
     marginVertical: 5,
+    padding: 5,
+  },
+  removeButtonContainer: {
+    position: 'absolute',
+    top: 5, // Adjust as needed
+    right: 5, // Adjust as needed
+    zIndex: 10, // Ensures it stays on top of the image
   },
   removeIcon: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
+    backgroundColor: 'red',  // Circle background
+    width: 25,
+    height: 25,
+    borderRadius: 35 / 2, // Circular shape
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5, // Shadow for Android
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
+  removeImage: {
+    width: 15,
+    height: 3, // Thin horizontal line
+    tintColor: 'white', // White minus icon inside
+  },
+  centerMessage: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyMessage: { textAlign: 'center', fontSize: 20, color: 'gray', fontFamily: 'Mali SemiBold', padding: 10 },
   buttonContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -142,5 +275,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'Mali SemiBold',
   },
+  swipeButton: {
+    backgroundColor: '#FFA500', // สีส้มเพื่อความเด่น
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 50,
+    marginTop: 20,
+  },
+  swipeButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+    fontFamily: 'Mali-Bold',
+    padding: 5,
+  },
 });
-

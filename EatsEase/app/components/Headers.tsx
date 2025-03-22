@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,19 +6,60 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 interface HeaderProps {
   title: string;
 }
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
-  const [isNotificationVisible, setNotificationVisible] = useState(false);
-  const [isMessageVisible, setMessageVisible] = useState(false);
+  const [isAIModalVisible, setAIModalVisible] = useState(false);
+  const [recommendedMenu, setRecommendedMenu] = useState<{ name: string; image: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      const storedUsername = await SecureStore.getItemAsync('username');
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    };
+    fetchUsername();
+  }, []);
+
+  const fetchRecommendedMenu = async () => {
+    if (!username) {
+      console.error("Username not found");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/recommendation/next_meal/${username}`, {
+        timeout: 10000, // Timeout 10s
+      });
+
+      if (response.data) {
+        setRecommendedMenu({
+          name: response.data.recommended_menu,
+          image: response.data.menu_image,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching recommended menu:", error);
+      setRecommendedMenu(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -29,56 +70,54 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         style={styles.header}
       >
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.iconContainer}>
-          {/* Bell Icon */}
-          <TouchableOpacity onPress={() => setNotificationVisible(true)}>
-            <Icon name="bell" size={30} color="white" style={styles.icon} />
-          </TouchableOpacity>
-          {/* Message Icon */}
-          <TouchableOpacity onPress={() => setMessageVisible(true)}>
-            <Icon name="message" size={30} color="white" style={styles.icon} />
-          </TouchableOpacity>
-        </View>
+
+        {/* AI Feature Icon */}
+        <TouchableOpacity
+          onPress={() => {
+            setAIModalVisible(true);
+            fetchRecommendedMenu(); // Fetch data when modal opens
+          }}
+          style={styles.aiIconContainer}
+        >
+          <Image source={require('../../app/image/bot.png')} style={styles.aiIcon} />
+        </TouchableOpacity>
       </LinearGradient>
 
-      {/* Notification Modal */}
+      {/* AI Feature Modal */}
       <Modal
-        visible={isNotificationVisible}
+        visible={isAIModalVisible}
         transparent={true}
         animationType="slide"
-        onRequestClose={() => setNotificationVisible(false)}
+        onRequestClose={() => setAIModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Notifications</Text>
-            <Text style={styles.modalText}>Here are your notifications...</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setNotificationVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+            <Text style={styles.modalTitle}>เมนูแนะนำสำหรับมื้อถัดไป!</Text>
 
-      {/* Message Modal */}
-      <Modal
-        visible={isMessageVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setMessageVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Messages</Text>
-            <Text style={styles.modalText}>Here are your messages...</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setMessageVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            {loading ? (
+              <ActivityIndicator size="large" color="#5ECFA6" />
+            ) : recommendedMenu ? (
+              <>
+                <Image source={{ uri: recommendedMenu.image }} style={styles.menuImage} />
+                <Text style={styles.modalText}>
+                  🍽 เมนูแนะนำ: {recommendedMenu.name} {"\n"}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.modalText}>⚠️ ไม่สามารถดึงข้อมูลเมนูแนะนำได้</Text>
+            )}
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.refreshButton}
+                onPress={fetchRecommendedMenu}
+              >
+                <Text style={styles.refreshButtonText}>ลองอีกครั้ง</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.closeButton} onPress={() => setAIModalVisible(false)}>
+                <Text style={styles.closeButtonText}>กลับหน้าหลัก</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -91,7 +130,7 @@ const styles = StyleSheet.create({
     padding: 55,
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row', // Ensure content aligns horizontally
+    flexDirection: 'row',
   },
   title: {
     fontSize: 36,
@@ -99,47 +138,58 @@ const styles = StyleSheet.create({
     fontFamily: 'Jua Regular',
     color: 'white',
     position: 'absolute',
-    left: 20, // Adjust this value for padding from the left
-    top: 60, // Adjust to position properly in line with the icons
+    left: 20,
+    top: 60,
   },
-  iconContainer: {
+  aiIconContainer: {
     position: 'absolute',
-    right: 20, // Aligns both icons to the right
-    top: 60, // Align with the title text
-    flexDirection: 'row', // Ensures icons are next to each other
+    right: 20,
+    top: 60,
   },
-  icon: {
-    marginLeft: 10, // Add some spacing between the icons
+  aiIcon: {
+    width: 30,
+    height: 30,
   },
-  // Modal Styles
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     width: width * 0.8,
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 25,
     padding: 20,
     alignItems: 'center',
     elevation: 5,
+    position: 'relative',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginTop: 10,
     color: '#333',
+    fontFamily: 'Mali-Regular',
+    padding:  10,
   },
   modalText: {
     fontSize: 16,
     color: '#555',
-    textAlign: 'center',
     marginBottom: 20,
+    fontFamily: 'Mali-Regular',
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  menuImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    marginBottom: 10,
+    marginTop: 10,
   },
   closeButton: {
-    backgroundColor: '#FE5266',
+    backgroundColor: '#FE665D',
     borderRadius: 25,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -147,7 +197,31 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: 'Mali-Regular',
+    padding: 4,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '90%',
+    marginTop: -15,
+  },
+  refreshButton: {
+    backgroundColor: '#FFA500',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    flex: 1,
+    marginRight: 20,
+    alignItems: 'center',
+  },
+  refreshButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: 'Mali-Regular',
+    padding: 4,
   },
 });
 

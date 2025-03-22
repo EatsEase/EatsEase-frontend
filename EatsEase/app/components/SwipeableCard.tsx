@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, Dimensions, Animated, PanResponder, GestureResponderEvent, PanResponderGestureState, View } from 'react-native';
-import { Image } from 'react-native';
-
+import { StyleSheet, Text, Dimensions, Animated, PanResponder, GestureResponderEvent, PanResponderGestureState, View, Image } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -9,48 +7,51 @@ interface CardItem {
   id: string;
   menuTitle: string;
   backgroundColor: string;
-  image?: any;
+  image?: string; // ✅ เปลี่ยนจาก any เป็น string (URL ของภาพ)
 }
-
 interface SwipeableCardProps {
   item: CardItem;
   removeCard: () => void;
-  swipedDirection: (direction: string) => void;
+  swipedDirection: (dir: string) => void;
+  image: any;
 }
 
 const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedDirection }) => {
   const [xPosition, setXPosition] = useState(new Animated.Value(0));
   let swipeDirection = '';
   const cardOpacity = new Animated.Value(1);
+  
   const rotateCard = xPosition.interpolate({
     inputRange: [-200, 0, 200],
     outputRange: ['-20deg', '0deg', '20deg'],
   });
 
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => false,
-    onMoveShouldSetPanResponder: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => true,
-    onPanResponderMove: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: (_, gestureState) => {
       xPosition.setValue(gestureState.dx);
-      if (gestureState.dx > SCREEN_WIDTH - 250) {
+      swipeDirection = '';
+
+      if (gestureState.dx > 50) {
         swipeDirection = 'Right';
-      } else if (gestureState.dx < -SCREEN_WIDTH + 250) {
+      } else if (gestureState.dx < -50) {
         swipeDirection = 'Left';
       }
     },
-    onPanResponderRelease: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      if (gestureState.dx < SCREEN_WIDTH - 150 && gestureState.dx > -SCREEN_WIDTH + 150) {
-        swipedDirection('--');
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx < 50 && gestureState.dx > -50) {
+        // Not swiped far enough, reset position
         Animated.spring(xPosition, {
           toValue: 0,
           speed: 5,
           bounciness: 10,
           useNativeDriver: false,
         }).start();
-      } else if (gestureState.dx > SCREEN_WIDTH - 150) {
+      } else {
         Animated.parallel([
           Animated.timing(xPosition, {
-            toValue: SCREEN_WIDTH,
+            toValue: swipeDirection === 'Right' ? SCREEN_WIDTH : -SCREEN_WIDTH,
             duration: 200,
             useNativeDriver: false,
           }),
@@ -60,23 +61,10 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedD
             useNativeDriver: false,
           }),
         ]).start(() => {
-          swipedDirection(swipeDirection);
-          removeCard();
-        });
-      } else if (gestureState.dx < -SCREEN_WIDTH + 150) {
-        Animated.parallel([
-          Animated.timing(xPosition, {
-            toValue: -SCREEN_WIDTH,
-            duration: 200,
-            useNativeDriver: false,
-          }),
-          Animated.timing(cardOpacity, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: false,
-          }),
-        ]).start(() => {
-          swipedDirection(swipeDirection);
+          if (swipeDirection) {
+            console.log(`Swiped ${swipeDirection}`);
+            swipedDirection(swipeDirection);
+          }
           removeCard();
         });
       }
@@ -95,11 +83,24 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedD
         },
       ]}
     >
+      {/* แสดงรูปภาพของเมนู */}
       <View style={styles.imageContainer}>
-        <Image source={item.image} style={styles.image} resizeMode="cover" />
+          {item.image ? (
+            <Image 
+              source={{ uri: item.image }} 
+              style={styles.image} 
+              resizeMode="cover" // ✅ ใช้ cover แทน stretch
+            />
+          ) : (
+            <View style={styles.placeholder}>
+              <Text style={styles.placeholderText}>No Image</Text>
+            </View>
+          )}
       </View>
+
+      {/* แสดงชื่อเมนู */}
       <View style={styles.textContainer}>
-        <Text style={styles.cardTitleStyle}> {item.menuTitle} </Text>
+        <Text style={styles.cardTitleStyle}>{item.menuTitle}</Text>
       </View>
     </Animated.View>
   );
@@ -111,10 +112,12 @@ const styles = StyleSheet.create({
   cardStyle: {
     width: '85%',
     height: '85%',
-    justifyContent: 'flex-end', // This will push the content to the bottom
+    justifyContent: 'flex-end',
     alignItems: 'center',
     position: 'absolute',
-    borderRadius: 20,
+    borderRadius: 25,
+    backgroundColor: '#FFF', // เพิ่มพื้นหลังให้เป็นสีขาวเพื่อความชัดเจน
+    elevation: 5, // เงาสำหรับ Android
   },
   imageContainer: {
     flex: 1,
@@ -126,28 +129,32 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  placeholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E0E0E0', // สีเทาสำหรับกรณีไม่มีรูป
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#666',
+  },
   textContainer: {
     width: '100%',
-    padding: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Semi-transparent background for text
+    padding: 8,
     alignItems: 'center',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    backgroundColor: 'rgba(235, 232, 232, 0.9)',
   },
   cardTitleStyle: {
-    color: '#fff',
-    fontSize: 16,
+    color: 'rgba(47, 47, 47, 0.82)',
+    fontSize: 20,
     fontFamily: 'Mali SemiBold',
     textAlign: 'center',
     lineHeight: 30,
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '90%', // Adjust based on your preference
-    marginTop: -30, // Space between cards and icons
-  },
-  iconButton: {
-    padding: 10,
+    paddingTop: 5,
+    paddingBottom: 5,
   },
 });

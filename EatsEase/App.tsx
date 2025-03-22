@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SplashScreen from 'expo-splash-screen';
 
 import MainLayout from './app/components/MainLayout';
 import SignupScreen from './app/screens/SignupScreen';
@@ -16,8 +17,13 @@ import PreferencesScreen from './app/screens/PreferencesScreen';
 import HistoryScreen from './app/screens/HistoryScreen';
 import ProfileScreen from './app/screens/ProfileScreen';
 import AllergiesScreen from './app/screens/AllergiesScreen';
+import MapScreen from './app/screens/MapScreen';
+import ErrorScreen from './app/screens/ErrorScreen';
+import ErrorBoundary from './app/screens/ErrorBoundary';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
+
+// const Stack = createStackNavigator();
 
 const loadFonts = async () => {
   await Font.loadAsync({
@@ -42,11 +48,12 @@ export default function App() {
   }, []);
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null; // ป้องกันการ Render หน้าเปล่า
   }
 
   return (
     <NavigationContainer>
+      <ErrorBoundary>
       <Stack.Navigator initialRouteName={isAuthenticated ? "MainLayout" : "Signup"}>
         <Stack.Screen
           name="Signup"
@@ -88,8 +95,14 @@ export default function App() {
           component={HistoryScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen 
+          name="ErrorScreen" 
+          component={ErrorScreen} 
+        />
+        <Stack.Screen name="MapScreen" component={MapScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
       <StatusBar style="auto" />
+      </ErrorBoundary>
     </NavigationContainer>
   );
 }
