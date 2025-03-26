@@ -99,20 +99,25 @@ const MapScreen: React.FC = () => {
           user_long: userLocation.long
         }
       );
+
+      console.log("Server Response:", response.data);
   
       const formattedRestaurants = response.data.map((item: any) => ({
-        id: item.restaurant._id,
-        restaurant_name: item.restaurant.restaurant_name,
-        lat: item.restaurant.restaurant_latitude,
-        long: item.restaurant.restaurant_longtitude,
-        restaurant_location: item.restaurant.restaurant_location,
-        restaurant_rating: item.restaurant.restaurant_rating,
-        restaurant_price_range: item.restaurant.restaurant_price_range,
-        restaurant_description: item.restaurant.restaurant_description,
-        restaurant_image: item.restaurant.restaurant_image,
-        restaurant_menu: item.restaurant.restaurant_menu,
-        restaurant_location_link: item.restaurant.restaurant_location_link,
+        id: item._id,
+        restaurant_name: item.restaurant_name,
+        lat: item.restaurant_latitude,
+        long: item.restaurant_longtitude,
+        restaurant_location: item.restaurant_location,
+        restaurant_rating: item.restaurant_rating,
+        restaurant_price_range: item.restaurant_price_range,
+        restaurant_description: item.restaurant_description,
+        restaurant_image: item.restaurant_image,
+        restaurant_menu: item.restaurant_menu,
+        restaurant_location_link: item.restaurant_location_link,
       }));
+        
+
+      console.log("Formatted Restaurants:", formattedRestaurants);
   
       setRestaurants(formattedRestaurants);
     } catch (error) {
