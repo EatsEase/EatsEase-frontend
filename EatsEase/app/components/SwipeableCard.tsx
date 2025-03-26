@@ -85,17 +85,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({ item, removeCard, swipedD
     >
       {/* แสดงรูปภาพของเมนู */}
       <View style={styles.imageContainer}>
-          {item.image ? (
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.image} 
-              resizeMode="cover" // ✅ ใช้ cover แทน stretch
-            />
-          ) : (
-            <View style={styles.placeholder}>
-              <Text style={styles.placeholderText}>No Image</Text>
-            </View>
-          )}
+      {item.image && item.image.trim() !== '' ? (
+          <Image source={{ uri: item.image }} style={styles.image} />
+        ) : (
+          <View style={styles.placeholder}>
+            <Text style={styles.placeholderText}>No Image</Text>
+          </View>
+        )}
       </View>
 
       {/* แสดงชื่อเมนู */}
@@ -139,6 +135,7 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 16,
     color: '#666',
+    fontFamily: 'Mali-Regular',
   },
   textContainer: {
     width: '100%',

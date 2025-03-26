@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, StyleSheet, View, Alert, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import SwipeableCard from '../components/SwipeableCard';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { homeScreenData } from '../services/homeScreenData';
@@ -62,8 +62,21 @@ const HomeScreen: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    if (username) {
+      fetchCurrentLikedMenuCount(username); 
+    }
+  }, [fetchData, username]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (username) {
+        fetchCurrentLikedMenuCount(username); // optional
+        fetchUserProfile(); // ✅ ดึง likedMenus จาก backend
+        setDislikedMenus([]); // ✅ เคลียร์เมนูไม่ชอบ
+      }
+    }, [username])
+  );
+  
   const removeCard = (id: string) => {
     setSampleCardArray((prev) => {
       const updatedArray = prev.filter((item) => item.id !== id);
@@ -98,11 +111,24 @@ const HomeScreen: React.FC = () => {
     if (!username) return;
     try {
       const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
-      console.log("Updated User Profile:", response.data);
+      const likedMenuNames: string[] = response.data.liked_menu || [];
+  
+      const updatedLikedMenus: CardItem[] = likedMenuNames.map((menuName, index) => ({
+        id: `liked-${index}`, // ใช้ id สมมุติ ถ้าไม่มี id จริง
+        menuTitle: menuName,
+        backgroundColor: '#d9B382',
+        image: null, // ใช้ null หรือ default image ก็ได้
+      }));
+  
+      setLikedMenus(updatedLikedMenus);
+      setLikedMenusCount(updatedLikedMenus.length);
+  
+      console.log("🔁 Synced likedMenus from backend:", updatedLikedMenus);
     } catch (error) {
       console.error("Error fetching updated user profile:", error);
     }
   };
+  
 
 
   // Function to update liked/disliked menus via PUT request immediately after swipe
@@ -152,38 +178,31 @@ const HomeScreen: React.FC = () => {
     }
   };
   
-  
-  // Handle swipe actions (Real-Time PUT request after each right swipe)
+  // Function to handle swipe actions and update liked/disliked menus
   const handleSwipe = (direction: string, item: CardItem) => {
-    if (direction === 'Right') {
-      console.log('Swiped Right:', item.menuTitle);
+    console.log(`🟢 Swiped ${direction}:`, item.menuTitle);
   
+    if (direction === 'Right') {
       if (likedMenusCount >= 5) {
         Alert.alert('Limit Reached', 'You can only like up to 5 menus. Remove some before adding more.');
         return;
       }
   
-      const updatedLikedMenus = [...likedMenus, item];
-      setLikedMenus(updatedLikedMenus);
-      updateUserMenus(updatedLikedMenus);
+      // If the user has liked 5 menus, prevent further likes
+      updateUserMenus([item]); // send liked menu to backend
     } else if (direction === 'Left') {
-      console.log('Swiped Left:', item.menuTitle);
-  
-      const updatedDislikedMenus = [...dislikedMenus, item];
-      setDislikedMenus(updatedDislikedMenus);
-      updateUserMenus(likedMenus, item);
+      setDislikedMenus((prev) => [...prev, item]);
+      updateUserMenus([], item);
     }
   
     removeCard(item.id);
   };
+
   
-  
-  // ✅ ใช้ useEffect() ตรวจสอบ likedMenusCount และ navigate ไปหน้า YourListScreen ถ้าครบ 5 เมนู
+  // Navigate to YourListScreen when 5 menus are liked using useEffect
   useEffect(() => {
     if (likedMenusCount === 5) {
       console.log('✅ Navigating to YourListScreen (likedMenusCount = 5)');
-      
-      fetchCurrentLikedMenuCount(username); // 🔄 ดึงข้อมูลให้แน่ใจว่า count อัปเดตแล้ว
   
       navigation.navigate('YourListScreen', {
         likedMenus,

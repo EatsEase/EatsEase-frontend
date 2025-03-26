@@ -19,10 +19,10 @@ export default function PreferencesScreen() {
   const distances = ["3 km", "5 km", "7 km", "10 km"];
   const priceMapping: { [key: string]: string } = {
     "฿": "<100",
-    "฿฿": "100+",
-    "฿฿฿": "250+",
-    "฿฿฿฿": "500+",
-    "฿฿฿฿฿": "1,000+",
+    "฿฿": "<250",
+    "฿฿฿": "<500",
+    "฿฿฿฿": "<1,000",
+    "฿฿฿฿฿": ">1,000",
   };
 
   useEffect(() => {
@@ -35,25 +35,29 @@ export default function PreferencesScreen() {
           return;
         }
         setUsername(storedUsername);
-
-        // Fetch categories (food preferences)
+  
+        // Fetch categories
         const categoryRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/category/all");
         const categoryNames = categoryRes.data.map((item: { category_name: string }) => item.category_name);
         setCategories(categoryNames);
-
+  
         // Fetch allergies
         const allergyRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/allergies/all");
         const allergyNames = allergyRes.data.map((item: { allergy_name: string }) => item.allergy_name);
         setAllergies(allergyNames);
-
+  
         // Fetch user profile
         const profileRes = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
         const userProfile = profileRes.data.userProfile;
-
-        // Set user preferences
+  
         setSelectedCategories(userProfile.food_preferences || []);
         setSelectedAllergies(userProfile.allergies || []);
-        setSelectedDistance(userProfile.distance_in_km_preference ? `${userProfile.distance_in_km_preference} km` : null);
+  
+        const distanceInKm = userProfile.distance_in_km_preference;
+        const formattedDistance = distanceInKm ? `${distanceInKm} km` : "5 km";
+        setSelectedDistance(formattedDistance);
+        
+  
         setSelectedPrice(priceMapping[userProfile.price_range] || null);
       } catch (error) {
         console.error("Error fetching preferences:", error);
@@ -62,9 +66,10 @@ export default function PreferencesScreen() {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   const toggleCategory = (category: string) => {
     if (selectedCategories.includes(category)) {
@@ -105,7 +110,9 @@ export default function PreferencesScreen() {
       const requestBody = {
         food_preferences: selectedCategories,
         allergies: selectedAllergies,
-        distance_in_km_preference: selectedDistance ? parseInt(selectedDistance) : 5,
+        distance: selectedDistance
+        ? parseInt(selectedDistance.replace(" km", ""))
+        : 5,      
         price_range: Object.keys(priceMapping).find((key) => priceMapping[key] === selectedPrice) || "฿",
       };
 
