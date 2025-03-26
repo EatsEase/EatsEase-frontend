@@ -5,6 +5,7 @@ import Dropdown from "../components/DropDown";
 import { useNavigation } from '@react-navigation/native';
 import axiosInstance from '../services/axiosInstance';
 import * as SecureStore from 'expo-secure-store';
+import axios from "axios";
 
 
 
@@ -87,9 +88,16 @@ const SignupScreen = () => {
     };
 
     // Handle guest mode, bypassing the signup process
-    const handleGuestMode = () => {
+    const handleGuestMode = async () => {
+        const guestResponse = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/user/guest');
+        console.log(guestResponse.data)
+
+        if (guestResponse.data) {
+            await SecureStore.setItemAsync('token', guestResponse.data.token);
+            await SecureStore.setItemAsync('username', guestResponse.data.user);
         // Navigate to the next screen without authentication
-        navigation.navigate('FirstPreferences');
+            navigation.navigate('FirstPreferences');
+        }
     };
 
     return (
