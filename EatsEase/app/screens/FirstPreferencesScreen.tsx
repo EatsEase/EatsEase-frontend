@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#d9d9d9',
         paddingVertical: 15,
         paddingHorizontal: 10,
-        borderRadius: 10,
+        borderRadius: 25,
         margin: 5,
         alignItems: 'center',
         justifyContent: 'center',
@@ -247,6 +247,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         minWidth: 80,
         maxWidth: '100%',
+        paddingVertical: 4,
     },
     selectedCategoryText: {
         color: 'white',
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     enterButton: {
         backgroundColor: '#5ECFA6',
         paddingVertical: 15,
-        borderRadius: 30,
+        borderRadius: 25,
         marginTop: 30,
         alignItems: 'center',
     },

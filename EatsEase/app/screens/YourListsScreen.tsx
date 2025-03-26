@@ -167,7 +167,7 @@ const YourListScreen: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.nextButton,
-            { backgroundColor: selectedCard ? '#5ECFA6' : 'gray' } // ✅ เปลี่ยนสีปุ่มตามเงื่อนไข
+            { backgroundColor: selectedCard ? '#5ECFA6' : 'gray' }
           ]}
           onPress={handleNext}
           disabled={!selectedCard}
@@ -204,11 +204,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginLeft: 20,
     marginRight: 20,
-    marginTop: 20,
+    marginTop: 5,
   },
   card: {
     width: '45%',
-    marginBottom: 20,
+    marginBottom: 10,
     borderRadius: 10,
     overflow: 'hidden',
     borderWidth: 2,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: '100%',
-    height: 100,
+    height: 80,
   },
   cardTitle: {
     fontSize: 16,
@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 30,
     alignSelf: 'center', // Center it horizontally
+    marginTop: 0,
   },
   disabledButton: {
     backgroundColor: 'gray', // Gray color for the disabled state

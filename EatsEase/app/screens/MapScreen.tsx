@@ -241,7 +241,7 @@ const MapScreen: React.FC = () => {
         onPress={handleConfirmSelection}
         disabled={!selectedRestaurant} 
       >
-        <Text style={styles.confirmButtonText}>Confirm</Text>
+        <Text style={styles.confirmButtonText}>ยืนยันร้านอาหาร</Text>
       </TouchableOpacity>
 
       {/* 🎉 Popup Modal เมื่อกด Confirm */}
@@ -313,14 +313,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   disabledButton: { backgroundColor: "gray" },
-  confirmButtonText: { color: "white", fontSize: 18, fontWeight: "bold" },
+  confirmButtonText: { color: "white", fontSize: 18, fontWeight: "bold", fontFamily: "Mali-Regular" },
   loadingIndicator: { flex: 1, justifyContent: "center", alignItems: "center" },
-  modalContent: { backgroundColor: "white", padding: 20, borderRadius: 15, alignItems: "center" },
+  modalContent: { backgroundColor: "white", padding: 20, borderRadius: 25, alignItems: "center" },
   modalTitle: { fontSize: 20, fontWeight: "bold", fontFamily: "Mali-Regular", textAlign: "center", marginBottom: 10, height: 50, marginTop: 10 },
   modalText: { fontSize: 16, fontFamily: "Mali-Regular", textAlign: "center", marginBottom: 5 },
   buttonContainer: { flexDirection: "row", justifyContent: "space-between", width: "100%" },
-  mapButton: { backgroundColor: "#5ECFA6", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10, paddingTop: 10 },
-  closeButton: { backgroundColor: "#FF6B6B", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },
+  mapButton: { backgroundColor: "#5ECFA6", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 25, paddingTop: 10 },
+  closeButton: { backgroundColor: "#FF6B6B", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 25 },
   buttonText: { color: "white", fontSize: 16, fontWeight: "bold", fontFamily: "Mali-Regular", padding: 5 },
   celebrationImage: { width: 120, height: 120, marginBottom: 10 },
   userLocationText: {

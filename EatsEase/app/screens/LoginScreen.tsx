@@ -38,7 +38,7 @@ const LoginScreen = () => {
                 if (savedToken && savedUsername) {
                     console.log('🎉 Login successful:', { savedToken, savedUsername });
                     alert(`เข้าสู่ระบบสำเร็จ! \nบัญชีที่ใช้งาน: ${savedUsername}`);
-                    navigation.navigate('MainLayout'); // ไปหน้า Main
+                    navigation.navigate('MainLayout', { screen: 'HomeScreen' }); // ไปหน้า Main
                 } else {
                     console.error('❌ Token or Username not saved');
                     alert('เกิดข้อผิดพลาดในการบันทึก Token กรุณาลองใหม่');
