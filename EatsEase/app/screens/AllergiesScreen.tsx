@@ -98,7 +98,7 @@ const AllergiesScreen = () => {
             if (response.status === 200) {
                 Alert.alert("Success", "Allergies updated successfully!");
                 console.log("Allergies updated successfully!", response.data);
-                navigation.navigate('MainLayout'); // Navigate to home after updating
+                navigation.navigate('MainLayout', { screen: 'HomeScreen' });
             } else {
                 throw new Error("Failed to update allergies");
             }
@@ -109,7 +109,7 @@ const AllergiesScreen = () => {
     };
 
     const handleSkip = () => {
-        navigation.navigate('MainLayout'); // Skip without updating allergies
+        navigation.navigate('MainLayout', { screen: 'HomeScreen' }); // Skip without updating allergies
     };
 
     return (
@@ -147,6 +147,7 @@ const AllergiesScreen = () => {
                                 </Text>
                             </TouchableOpacity>
                         ))}
+                        <Text style={styles.textAdd}>คุณสามารถตั้งค่าได้ในภายหลัง!</Text>
                     </ScrollView>
                 )}
 
@@ -158,14 +159,14 @@ const AllergiesScreen = () => {
                     onPress={handleSubmit}
                     disabled={selectedAllergies.length === 0}
                 >
-                    <Text style={styles.enterButtonText}>Next</Text>
+                    <Text style={styles.enterButtonText}>บันทึก</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.skipButton}
                     onPress={handleSkip}
                 >
-                    <Text style={styles.skipButtonText}>Skip</Text>
+                    <Text style={styles.skipButtonText}>ข้ามไปก่อน</Text>
                 </TouchableOpacity>
             </View>
         </LinearGradient>
@@ -196,6 +197,16 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         paddingBottom: 0,
         height: 50,
+    },
+    textAdd: {
+        fontSize: 16,
+        color: 'black',
+        fontFamily: 'Mali-Regular',
+        textAlign: 'center',
+        paddingTop: 10,
+        paddingBottom: 0,
+        height: 50,
+        marginTop: 30,
     },
     logo: {
         width: 90,
@@ -229,7 +240,7 @@ const styles = StyleSheet.create({
     categoryBox: {
         backgroundColor: '#d9d9d9',
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 25,
         margin: 5,
         alignItems: 'center',
         justifyContent: 'center',
@@ -244,6 +255,7 @@ const styles = StyleSheet.create({
         color: 'black',
         fontFamily: 'Mali-Bold',
         textAlign: 'center',
+        paddingVertical: 4,
     },
     selectedCategoryText: {
         color: 'white',
@@ -251,25 +263,25 @@ const styles = StyleSheet.create({
     enterButton: {
         backgroundColor: '#5ECFA6',
         paddingVertical: 15,
-        borderRadius: 30,
+        borderRadius: 25,
         marginTop: 30,
         alignItems: 'center',
     },
     enterButtonText: {
         color: 'white',
         fontSize: 20,
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
     },
     skipButton: {
         backgroundColor: '#5ECFA6',
         paddingVertical: 15,
-        borderRadius: 30,
+        borderRadius: 25,
         marginTop: 10,
         alignItems: 'center',
     },
     skipButtonText: {
         color: 'white',
         fontSize: 16,
-        fontFamily: 'Jua Regular',
+        fontFamily: 'Mali-Bold',
     },
 });

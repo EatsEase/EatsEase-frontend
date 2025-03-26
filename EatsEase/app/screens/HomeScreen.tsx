@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView, StyleSheet, View, Alert, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Alert, TouchableOpacity, Text, Image } from 'react-native';
 import SwipeableCard from '../components/SwipeableCard';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -26,22 +26,28 @@ const HomeScreen: React.FC = () => {
   const [username, setUsername] = useState<string | null>(null);
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  const fetchData = useCallback(async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setLoading(true);
       const storedUsername = await SecureStore.getItemAsync('username');
-      console.log('Stored username:', storedUsername);
-
       if (!storedUsername) {
         Alert.alert('Error', 'No username found. Please log in again.');
         navigation.navigate('Login');
         return;
       }
       setUsername(storedUsername);
+      await fetchMenuData(storedUsername);
+      await fetchCurrentLikedMenuCount(storedUsername);
+    } catch (error) {
+      console.error('❌ Error during user initialization:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigation]);
 
-      const data = await homeScreenData(storedUsername);
-      console.log('Fetched menu data:', data);
-
+  const fetchMenuData = async (usernameParam: string) => {
+    try {
+      const data = await homeScreenData(usernameParam);
       if (data && data.length > 0) {
         const transformedData: CardItem[] = data.map((item: any) => ({
           id: item._id,
@@ -52,158 +58,84 @@ const HomeScreen: React.FC = () => {
         setSampleCardArray(transformedData.reverse());
       } else {
         console.warn('⚠️ No new recommended menus available.');
+        setSampleCardArray([]);
       }
     } catch (error) {
       console.error('Error fetching home screen data:', error);
-    } finally {
-      setLoading(false);
     }
-  }, [navigation]);
+  };
 
-  useEffect(() => {
-    fetchData();
-    if (username) {
-      fetchCurrentLikedMenuCount(username); 
-    }
-  }, [fetchData, username]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (username) {
-        fetchCurrentLikedMenuCount(username); // optional
-        fetchUserProfile(); // ✅ ดึง likedMenus จาก backend
-        setDislikedMenus([]); // ✅ เคลียร์เมนูไม่ชอบ
+  const fetchCurrentLikedMenuCount = async (usernameParam: string) => {
+    try {
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${usernameParam}`);
+      const data = response.data;
+      if (data && data.count !== undefined) {
+        setLikedMenusCount(data.count);
+        const updatedLikedMenus: CardItem[] = data.menu_list.map((item: any) => ({
+          id: item._id,
+          menuTitle: item.menu_name,
+          backgroundColor: '#d9B382',
+          image: item.menu_image,
+        }));
+        setLikedMenus(updatedLikedMenus);
       }
-    }, [username])
-  );
-  
+    } catch (error) {
+      console.error('❌ Error fetching current liked menu:', error);
+    }
+  };
+
+  const updateUserMenus = async (newLikedMenus: CardItem[], newDislikedMenu?: CardItem) => {
+    if (!username) return;
+    try {
+      if (newLikedMenus.length > 0) {
+        const latestLikedMenu = newLikedMenus[newLikedMenus.length - 1].menuTitle;
+        await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/liked/${username}`, { liked_menu: latestLikedMenu });
+      }
+      if (newDislikedMenu) {
+        await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/disliked/${username}`, { disliked_menu: newDislikedMenu.menuTitle });
+      }
+      await fetchCurrentLikedMenuCount(username);
+    } catch (error) {
+      console.error('Error updating liked/disliked menus:', error);
+    }
+  };
+
+  const handleSwipe = (direction: string, item: CardItem) => {
+    if (direction === 'Right') {
+      if (likedMenusCount >= 5) {
+        Alert.alert('Limit Reached', 'You can only like up to 5 menus.');
+        return;
+      }
+      const updatedLikedMenus = [...likedMenus, item];
+      setLikedMenus(updatedLikedMenus);
+      updateUserMenus(updatedLikedMenus);
+    } else if (direction === 'Left') {
+      const updatedDislikedMenus = [...dislikedMenus, item];
+      setDislikedMenus(updatedDislikedMenus);
+      updateUserMenus([], item);
+    }
+    removeCard(item.id);
+  };
+
   const removeCard = (id: string) => {
     setSampleCardArray((prev) => {
       const updatedArray = prev.filter((item) => item.id !== id);
-
-      // ✅ ถ้าเมนูหมด และไม่อยู่ใน loading state ให้ fetch ใหม่
       if (updatedArray.length === 0 && !loading) {
-        console.log("🟡 All recommended menus used, fetching more...");
-        fetchData();
+        fetchUserData();
       }
       return updatedArray;
     });
   };
-  
-  const fetchCurrentLikedMenuCount = async (username: string) => {
-    try {
-      const response = await axios.get(
-        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${username}`
-      );
 
-      console.log("✅ Current Liked Menu Response:", response.data);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserData();
+      setDislikedMenus([]);
+    }, [fetchUserData])
+  );
 
-      if (response.data && response.data.count !== undefined) {
-        setLikedMenusCount(response.data.count); // ✅ อัปเดตจำนวนเมนูที่เหลือ
-      }
-    } catch (error) {
-      console.error("❌ Error fetching current_liked_menu count:", error);
-    }
-  };
-
-  // Fetch user profile to confirm the update
-  const fetchUserProfile = async () => {
-    if (!username) return;
-    try {
-      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
-      const likedMenuNames: string[] = response.data.liked_menu || [];
-  
-      const updatedLikedMenus: CardItem[] = likedMenuNames.map((menuName, index) => ({
-        id: `liked-${index}`, // ใช้ id สมมุติ ถ้าไม่มี id จริง
-        menuTitle: menuName,
-        backgroundColor: '#d9B382',
-        image: null, // ใช้ null หรือ default image ก็ได้
-      }));
-  
-      setLikedMenus(updatedLikedMenus);
-      setLikedMenusCount(updatedLikedMenus.length);
-  
-      console.log("🔁 Synced likedMenus from backend:", updatedLikedMenus);
-    } catch (error) {
-      console.error("Error fetching updated user profile:", error);
-    }
-  };
-  
-
-
-  // Function to update liked/disliked menus via PUT request immediately after swipe
-  const updateUserMenus = async (newLikedMenus: CardItem[], newDislikedMenu?: CardItem) => {
-    if (!username) {
-      console.error("Username not found, can't update menus.");
-      return;
-    }
-  
-      try {
-        if (newLikedMenus.length > 0) {
-          const latestLikedMenu = newLikedMenus[newLikedMenus.length - 1].menuTitle; // เอาเมนูล่าสุดที่ไลค์
-          const likedMenusRequest = { liked_menu: latestLikedMenu };
-      
-          console.log("🔹 Sending POST to update liked_menu:", likedMenusRequest);
-      
-          // ✅ POST ไปที่ userProfile/liked/{username}
-          await axios.post(
-            `https://eatsease-backend-1jbu.onrender.com/api/userProfile/liked/${username}`,
-            likedMenusRequest,
-            { headers: { "Content-Type": "application/json" } }
-          );
-          
-          console.log("✅ Successfully updated liked_menu to both endpoints.");
-          fetchCurrentLikedMenuCount(username);
-        }
-  
-      // 🔹 อัปเดต disliked_menu (append ทีละเมนู)
-      if (newDislikedMenu) {
-        const dislikedMenusRequest = {
-          disliked_menu: newDislikedMenu.menuTitle, // เพิ่มเฉพาะเมนูที่เพิ่ง dislike
-        };
-        console.log("🔹 Sending POST to update disliked_menu:", dislikedMenusRequest);
-        
-        await axios.post(
-          `https://eatsease-backend-1jbu.onrender.com/api/userProfile/disliked/${username}`,
-          dislikedMenusRequest,
-          { headers: { "Content-Type": "application/json" } }
-        );
-      }
-  
-      // 🔹 Fetch อัปเดตข้อมูล userProfile เพื่อดูผลลัพธ์
-      fetchUserProfile();
-    } catch (error) {
-      console.error("Error updating liked/disliked menus:", error.response?.data || error);
-      Alert.alert("Error", "Could not update menu preferences. Please try again.");
-    }
-  };
-  
-  // Function to handle swipe actions and update liked/disliked menus
-  const handleSwipe = (direction: string, item: CardItem) => {
-    console.log(`🟢 Swiped ${direction}:`, item.menuTitle);
-  
-    if (direction === 'Right') {
-      if (likedMenusCount >= 5) {
-        Alert.alert('Limit Reached', 'You can only like up to 5 menus. Remove some before adding more.');
-        return;
-      }
-  
-      // If the user has liked 5 menus, prevent further likes
-      updateUserMenus([item]); // send liked menu to backend
-    } else if (direction === 'Left') {
-      setDislikedMenus((prev) => [...prev, item]);
-      updateUserMenus([], item);
-    }
-  
-    removeCard(item.id);
-  };
-
-  
-  // Navigate to YourListScreen when 5 menus are liked using useEffect
   useEffect(() => {
     if (likedMenusCount === 5) {
-      console.log('✅ Navigating to YourListScreen (likedMenusCount = 5)');
-  
       navigation.navigate('YourListScreen', {
         likedMenus,
         updateLikedMenus: (newMenus: CardItem[]) => setLikedMenus(newMenus),
@@ -211,10 +143,14 @@ const HomeScreen: React.FC = () => {
     }
   }, [likedMenusCount]);
 
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {loading ? (
-        <ActivityIndicator size="large" color="#5ECFA6" style={{ flex: 1, justifyContent: 'center' }} />
+        <View style={styles.loadingContainer}>
+          <Image source={require('../../app/image/mascot_loading.gif')} style={styles.loadingImage} />
+          <Text style={styles.loadingText}>กำลังหาเมนูที่ใช่ให้คุณอยู่... รอสักครู่นะ! 🍜✨</Text>
+        </View>
       ) : (
         <>
           <View style={styles.container}>
@@ -284,6 +220,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'Mali-Bold',
     padding: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  loadingImage: {
+    width: 180,
+    height: 180,
+    marginBottom: 20,
+    resizeMode: 'contain',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Mali-Regular',
+    color: '#333',
+    textAlign: 'center',
   },
 });
 

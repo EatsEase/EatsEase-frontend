@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import Header from "../components/Headers";
 
@@ -18,46 +18,57 @@ export default function PreferencesScreen() {
 
   const distances = ["3 km", "5 km", "7 km", "10 km"];
   const priceMapping: { [key: string]: string } = {
-    "฿": "<100",
-    "฿฿": "<250",
-    "฿฿฿": "<500",
-    "฿฿฿฿": "<1,000",
-    "฿฿฿฿฿": ">1,000",
+    "฿": "<100฿",
+    "฿฿": "<250฿",
+    "฿฿฿": "<500฿",
+    "฿฿฿฿": "<1,000฿",
+    "฿฿฿฿฿": ">1,000฿",
+  };
+
+  // แปลงออบเจ็กต์ priceMapping เป็น array ของ price range
+  const priceRanges = Object.values(priceMapping);
+
+  // ฟังก์ชันช่วยในการแบ่งอาร์เรย์เป็นชิ้นๆ (chunk) ทีละ n รายการ
+  const chunkArray = (array: string[], size: number) => {
+    const result = [];
+    for (let i = 0; i < array.length; i += size) {
+      result.push(array.slice(i, i + size));
+    }
+    return result;
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storedUsername = await SecureStore.getItemAsync('username');
+        const storedUsername = await SecureStore.getItemAsync("username");
         if (!storedUsername) {
           Alert.alert("Error", "No username found. Please log in again.");
           navigation.navigate("Login");
           return;
         }
         setUsername(storedUsername);
-  
+
         // Fetch categories
         const categoryRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/category/all");
         const categoryNames = categoryRes.data.map((item: { category_name: string }) => item.category_name);
         setCategories(categoryNames);
-  
+
         // Fetch allergies
         const allergyRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/allergies/all");
         const allergyNames = allergyRes.data.map((item: { allergy_name: string }) => item.allergy_name);
         setAllergies(allergyNames);
-  
+
         // Fetch user profile
         const profileRes = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
         const userProfile = profileRes.data.userProfile;
-  
+
         setSelectedCategories(userProfile.food_preferences || []);
         setSelectedAllergies(userProfile.allergies || []);
-  
+
         const distanceInKm = userProfile.distance_in_km_preference;
         const formattedDistance = distanceInKm ? `${distanceInKm} km` : "5 km";
         setSelectedDistance(formattedDistance);
-        
-  
+
         setSelectedPrice(priceMapping[userProfile.price_range] || null);
       } catch (error) {
         console.error("Error fetching preferences:", error);
@@ -66,10 +77,9 @@ export default function PreferencesScreen() {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
-  
 
   const toggleCategory = (category: string) => {
     if (selectedCategories.includes(category)) {
@@ -110,9 +120,7 @@ export default function PreferencesScreen() {
       const requestBody = {
         food_preferences: selectedCategories,
         allergies: selectedAllergies,
-        distance: selectedDistance
-        ? parseInt(selectedDistance.replace(" km", ""))
-        : 5,      
+        distance: selectedDistance ? parseInt(selectedDistance.replace(" km", "")) : 5,
         price_range: Object.keys(priceMapping).find((key) => priceMapping[key] === selectedPrice) || "฿",
       };
 
@@ -129,6 +137,13 @@ export default function PreferencesScreen() {
     }
   };
 
+  // แบ่งอาร์เรย์สำหรับแต่ละ section
+  const categoryChunks = chunkArray(categories, 3);
+  const allergyChunks = chunkArray(allergies, 3);
+  // สำหรับ distance sectionแบ่งเป็น 4 อันต่อแถว
+  const distanceChunks = chunkArray(distances, 4);
+  const priceChunks = chunkArray(priceRanges, 3);
+
   return (
     <View style={styles.container}>
       <Header title="EatsEase" />
@@ -142,70 +157,131 @@ export default function PreferencesScreen() {
           {/* Categories Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>ประเภทอาหาร (อย่างน้อย 3)*</Text>
-            <FlatList
-              data={categories}
-              numColumns={3}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.box, selectedCategories.includes(item) && styles.selectedBox]}
-                  onPress={() => toggleCategory(item)}
-                >
-                  <Text style={[styles.boxText, selectedCategories.includes(item) && styles.selectedBoxText]}>
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              nestedScrollEnabled={true}
-              style={{ maxHeight: 150 }}
-            />
+            {categoryChunks.map((chunk, index) => (
+              <View
+                key={`cat-row-${index}`}
+                style={[
+                  styles.row,
+                  chunk.length < 3 ? { justifyContent: "center" } : { justifyContent: "space-between" },
+                ]}
+              >
+                {chunk.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    style={[
+                      styles.box,
+                      styles.gridBox,
+                      selectedCategories.includes(item) && styles.selectedBox,
+                    ]}
+                    onPress={() => toggleCategory(item)}
+                  >
+                    <Text
+                      style={[
+                        styles.boxText,
+                        selectedCategories.includes(item) && styles.selectedBoxText,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ))}
           </View>
 
           {/* Allergies Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>แพ้อาหาร (ถ้ามี)</Text>
-            <FlatList
-              data={allergies}
-              numColumns={3}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.box, selectedAllergies.includes(item) && styles.selectedBox]}
-                  onPress={() => toggleAllergy(item)}
-                >
-                  <Text style={[styles.boxText, selectedAllergies.includes(item) && styles.selectedBoxText]}>
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              nestedScrollEnabled={true}
-              style={{ maxHeight: 150 }}
-            />
+            {allergyChunks.map((chunk, index) => (
+              <View
+                key={`allergy-row-${index}`}
+                style={[
+                  styles.row,
+                  chunk.length < 3 ? { justifyContent: "center" } : { justifyContent: "space-between" },
+                ]}
+              >
+                {chunk.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    style={[
+                      styles.box,
+                      styles.gridBox,
+                      selectedAllergies.includes(item) && styles.selectedBox,
+                    ]}
+                    onPress={() => toggleAllergy(item)}
+                  >
+                    <Text
+                      style={[
+                        styles.boxText,
+                        selectedAllergies.includes(item) && styles.selectedBoxText,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ))}
           </View>
 
-          {/* Distance Section */}
+          {/* Distance Section (4 อันต่อแถว) */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>ร้านอาหารใกล้ฉัน (สูงสุด 1)*</Text>
-            <View style={styles.optionContainer}>
-              {distances.map((distance) => (
-                <TouchableOpacity key={distance} style={[styles.box, selectedDistance === distance && styles.selectedBox]} onPress={() => selectDistance(distance)}>
-                  <Text style={[styles.boxText, selectedDistance === distance && styles.selectedBoxText]}>{distance}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {distanceChunks.map((chunk, index) => (
+              <View
+                key={`distance-row-${index}`}
+                style={[
+                  styles.row,
+                  chunk.length < 4 ? { justifyContent: "center" } : { justifyContent: "space-between" },
+                ]}
+              >
+                {chunk.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    style={[
+                      styles.box,
+                      styles.gridBox4,
+                      selectedDistance === item && styles.selectedBox,
+                    ]}
+                    onPress={() => selectDistance(item)}
+                  >
+                    <Text style={[styles.boxText, selectedDistance === item && styles.selectedBoxText]}>
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ))}
           </View>
 
-
-          {/* Price Section */}
+          {/* Price Range Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>ช่วงราคาของร้านอาหาร (สูงสุด 1)*</Text>
-            <View style={styles.optionContainer}>
-              {Object.values(priceMapping).map((price) => (
-                <TouchableOpacity key={price} style={[styles.box, selectedPrice === price && styles.selectedBox]} onPress={() => selectPrice(price)}>
-                  <Text style={[styles.boxText, selectedPrice === price && styles.selectedBoxText]}>{price}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {priceChunks.map((chunk, index) => (
+              <View
+                key={`price-row-${index}`}
+                style={[
+                  styles.row,
+                  chunk.length < 3 ? { justifyContent: "center" } : { justifyContent: "space-between" },
+                ]}
+              >
+                {chunk.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    style={[
+                      styles.box,
+                      styles.gridBox,
+                      selectedPrice === item && styles.selectedBox,
+                    ]}
+                    onPress={() => selectPrice(item)}
+                  >
+                    <Text style={[styles.boxText, selectedPrice === item && styles.selectedBoxText]}>
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ))}
           </View>
         </ScrollView>
       )}
@@ -218,7 +294,6 @@ export default function PreferencesScreen() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -242,8 +317,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontFamily: "Mali SemiBold",
   },
+  // style สำหรับแต่ละแถวใน grid
+  row: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  // style สำหรับแต่ละ box ใน grid (สำหรับ Categories, Allergies, Price Range)
+  gridBox: {
+    width: "30%",
+  },
+  // style สำหรับแต่ละ box ใน Distance section (4 อันต่อแถว)
+  gridBox4: {
+    width: "22%",
+  },
   box: {
-    flex: 1,
     margin: 5,
     padding: 10,
     borderWidth: 1,
@@ -260,15 +347,12 @@ const styles = StyleSheet.create({
     fontFamily: "Mali Regular",
     fontSize: 14,
     color: "#555",
+    textAlign: "center",
+    paddingVertical: 3,
   },
   selectedBoxText: {
     color: "white",
     fontFamily: "Mali SemiBold",
-  },
-  optionContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-around",
   },
   buttonContainer: {
     flexDirection: "row",
@@ -278,15 +362,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#E8E8E8",
-    marginBottom: 15, // ขยับขึ้นจากขอบล่าง
-  },  
-  backButton: {
-    flex: 1,
-    padding: 15,
-    backgroundColor: "gray",
-    borderRadius: 25,
-    marginRight: 10,
-    alignItems: "center",
+    marginBottom: 15,
   },
   saveButton: {
     flex: 1,
@@ -302,5 +378,9 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
-

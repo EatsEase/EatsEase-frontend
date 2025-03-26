@@ -95,7 +95,10 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
             <Text style={styles.modalTitle}>เมนูแนะนำสำหรับมื้อถัดไป!</Text>
 
             {loading ? (
-              <ActivityIndicator size="large" color="#5ECFA6" />
+              <View style={styles.loadingContainer}>
+                <Image source={require('../../app/image/mascot_loading.gif')} style={styles.loadingImage} />
+                <Text style={styles.loadingText}>กำลังหาเมนูที่ใช่ให้คุณอยู่... รอสักครู่นะ! 🍜✨</Text>
+              </View>
             ) : recommendedMenu ? (
               <>
                 <Image source={{ uri: recommendedMenu.image }} style={styles.menuImage} />
@@ -222,6 +225,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Mali-Regular',
     padding: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  loadingImage: {
+    width: 20,
+    height: 20,
+    marginBottom: 20,
+    resizeMode: 'contain',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Mali-Regular',
+    color: '#333',
+    textAlign: 'center',
   },
 });
 

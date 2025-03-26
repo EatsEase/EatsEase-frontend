@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.typescript",
       "runtimeVersion": "1.0.0",
-      "newArchEnabled": true 
+      "newArchEnabled": true
     },
     "android": {
       "adaptiveIcon": {
@@ -27,11 +27,12 @@
         "policy": "sdkVersion"
       },
       "newArchEnabled": true,
-      "permissions": [ 
+      "permissions": [
         "INTERNET",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
-      ]
+      ],
+      "package": "com.eatsease.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

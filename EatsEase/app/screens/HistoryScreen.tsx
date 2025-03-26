@@ -101,7 +101,7 @@ const HistoryScreen = () => {
             <Text style={styles.emptyMessage}>ยังไม่มีประวัติอาหารเลย!</Text>
             <Text style={styles.emptyMessage}>ไปลองอาหารใหม่กันเถอะ</Text>
             <TouchableOpacity style={styles.swipeButton} onPress={() => navigation.navigate('HomeScreen')}>
-              <Text style={styles.swipeButtonText}>ไปลองอาหารใหม่กัน!</Text>
+              <Text style={styles.swipeButtonText}>ไปลองอาหารใหม่กัน !!!</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: 'white',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     fontFamily: 'Mali-Bold',
   },
@@ -212,10 +212,11 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   emptyImage: {
-    width: 120,
-    height: 120,
+    width: 200,
+    height: 200,
     resizeMode: 'contain',
     marginBottom: 10,
+    marginTop: -50,
   },
   swipeButton: {
     backgroundColor: '#FFA500',
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   swipeButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#fff',
     fontWeight: 'bold',
     fontFamily: 'Mali-Bold',
