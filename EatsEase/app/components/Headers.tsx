@@ -28,6 +28,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<string>('menu'); // Default view
   const navigation = useNavigation();
 
   // ✅ Fetch Username and Token
@@ -55,7 +56,6 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
 
     const check = await checkToken(getToken);
     if (check === false) {
-      await clearStoredData(); // ลบ token ที่หมดอายุ
       handleSessionExpired(); // Token expired
     } else {
       setToken(getToken);
@@ -97,11 +97,17 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         {
           timeout: 10000,
           headers: {
-            authorization: token,
+            'authorization': token,
             'Content-Type': 'application/json',
           },
         }
       );
+      if (response.data?.token == "Token Expired"){
+        setCurrentView('expired')
+        setTokenExpired(true)
+        const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token': token})
+        console.log("Successfully logout")
+      }
 
       if (response.data) {
         setRecommendedMenu({
@@ -120,33 +126,9 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   // ✅ Handle Logout and Redirect
   const handleLogout = async () => {
     try {
-      // ลบ token ออกจาก SecureStore
-      await SecureStore.deleteItemAsync('token');
-      await SecureStore.deleteItemAsync('username');
-
-      // เรียก API เพื่อ logout
-      await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {
-        token: token,
-      });
-
-      // รีเซ็ต navigation stack และไปยังหน้า Login
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }], // หรือ 'Signup' ตามต้องการ
-      });
+      navigation.navigate('Login')
     } catch (error) {
       console.error('❌ Error during logout:', error);
-    }
-  };
-
-  const clearStoredData = async () => {
-    try {
-      console.log('🧹 Clearing expired token and username...');
-      await SecureStore.deleteItemAsync('token');
-      await SecureStore.deleteItemAsync('username');
-      console.log('✅ Token and username cleared successfully.');
-    } catch (error) {
-      console.error('❌ Error clearing stored data:', error);
     }
   };
   
@@ -176,69 +158,88 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
 
       {/* AI Feature Modal */}
       <Modal
-        visible={isAIModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleModalClose}
-        onDismiss={handleModalClose}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {/* ✅ Token Expired - Show Login Message */}
-            {tokenExpired ? (
-              <>
-                <Text style={styles.modalTitle}>⚠️ Session Expired</Text>
-                <Text style={styles.modalText}>
-                  Your session was ended. Please log in again.
+    visible={isAIModalVisible}
+    transparent={true}
+    animationType="slide"
+    onRequestClose={handleModalClose}
+  >
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        {currentView === 'expired' ? (
+          <>
+            <Text style={styles.modalTitle}>⚠️ Session Expired</Text>
+            <Text style={styles.modalText}>
+              Your session has ended. Please log in again.
+            </Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                setAIModalVisible(false);
+                navigation.navigate('Login'); // ✅ Redirect to login
+              }}
+            >
+              <Text style={styles.closeButtonText}>Login Again</Text>
+            </TouchableOpacity>
+          </>
+        ) : currentView === 'menu' ? (
+          <>
+            <Text style={styles.modalTitle}>เมนูแนะนำสำหรับมื้อถัดไป!</Text>
+
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <Image
+                  source={require('../../app/image/mascot_loading.gif')}
+                  style={styles.loadingImage}
+                />
+                <Text style={styles.loadingText}>
+                  กำลังหาเมนูที่ใช่ให้คุณอยู่... รอสักครู่นะ! 🍜✨
                 </Text>
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => {
-                    setAIModalVisible(false);
-                    navigation.navigate('Login'); // ✅ Redirect to login
-                  }}
-                >
-                  <Text style={styles.closeButtonText}>Login Again</Text>
-                </TouchableOpacity>
+              </View>
+            ) : recommendedMenu ? (
+              <>
+                <Image source={{ uri: recommendedMenu.image }} style={styles.menuImage} />
+                <Text style={styles.modalText}>
+                  🍽 เมนูแนะนำ: {recommendedMenu.name}
+                </Text>
               </>
             ) : (
-              <>
-                <Text style={styles.modalTitle}>เมนูแนะนำสำหรับมื้อถัดไป!</Text>
-
-                {loading ? (
-                  <View style={styles.loadingContainer}>
-                    <Image
-                      source={require('../../app/image/mascot_loading.gif')}
-                      style={styles.loadingImage}
-                    />
-                    <Text style={styles.loadingText}>
-                      กำลังหาเมนูที่ใช่ให้คุณอยู่... รอสักครู่นะ! 🍜✨
-                    </Text>
-                  </View>
-                ) : recommendedMenu ? (
-                  <>
-                    <Image source={{ uri: recommendedMenu.image }} style={styles.menuImage} />
-                    <Text style={styles.modalText}>
-                      🍽 เมนูแนะนำ: {recommendedMenu.name}
-                    </Text>
-                  </>
-                ) : (
-                  <Text style={styles.modalText}>⚠️ ไม่สามารถดึงข้อมูลเมนูแนะนำได้</Text>
-                )}
-
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={styles.refreshButton} onPress={fetchRecommendedMenu}>
-                    <Text style={styles.refreshButtonText}>ลองอีกครั้ง</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.closeButton} onPress={handleModalClose}>
-                    <Text style={styles.closeButtonText}>กลับหน้าหลัก</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
+              <Text style={styles.modalText}>⚠️ ไม่สามารถดึงข้อมูลเมนูแนะนำได้</Text>
             )}
-          </View>
-        </View>
-      </Modal>
+
+            {/* ✅ Show Button Container ONLY if not 'expired' */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.refreshButton} onPress={fetchRecommendedMenu}>
+                <Text style={styles.refreshButtonText}>ลองอีกครั้ง</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.closeButton} onPress={handleModalClose}>
+                <Text style={styles.closeButtonText}>กลับหน้าหลัก</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : currentView === 'error' ? (
+          <>
+            <Text style={styles.modalTitle}>⚠️ เกิดข้อผิดพลาด</Text>
+            <Text style={styles.modalText}>
+              ไม่สามารถโหลดเมนูได้ กรุณาลองอีกครั้ง
+            </Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                setAIModalVisible(false);
+                setCurrentView('menu'); // Return to menu view
+              }}
+            >
+              <Text style={styles.closeButtonText}>กลับหน้าหลัก</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <Text style={styles.modalText}>⚠️ Unknown state, please refresh</Text>
+        )}
+      </View>
+    </View>
+  </Modal>
+
+
     </>
   );
 };
