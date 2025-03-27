@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, ActivityIndicator, Ale
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
+import { checkToken } from "../services/checkToken";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -34,8 +35,28 @@ export default function ProfileScreen() {
     // ✅ Use useFocusEffect to refresh data every time the screen is visited
   useFocusEffect(
     useCallback(() => {
-      setLoading(true);
-      fetchUserProfile();
+        const verifyToken = async () => {
+          const getToken = await SecureStore.getItemAsync('token');
+          if (!getToken){
+              Alert.alert("Error", "No token found. Please log in again.");
+              navigation.navigate("Login");
+              return;
+          }
+          const check = await checkToken(getToken)
+          if (check == false){
+              Alert.alert("Error", "Token is expired. Please log in again.")
+              const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+              console.log(logout)
+              navigation.navigate("Login")
+              return;
+          }
+          if (check == true){
+            setLoading(true);
+            fetchUserProfile();
+          }
+      }
+
+      verifyToken();
     }, [])
   );
 

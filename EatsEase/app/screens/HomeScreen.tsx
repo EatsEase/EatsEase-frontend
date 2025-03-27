@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { homeScreenData } from '../services/homeScreenData';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
+import { checkToken } from '../services/checkToken';
 
 interface CardItem {
   id: string;
@@ -129,8 +130,28 @@ const HomeScreen: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchUserData();
-      setDislikedMenus([]);
+      const verifyToken = async () => {
+        const getToken = await SecureStore.getItemAsync('token');
+        if (!getToken){
+            Alert.alert("Error", "No token found. Please log in again.");
+            navigation.navigate("Login");
+            return;
+        }
+        const check = await checkToken(getToken)
+        if (check == false){
+            Alert.alert("Error", "Token is expired. Please log in again.")
+            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+            console.log(logout)
+            navigation.navigate("Login")
+            return;
+        }
+        if (check == true){
+          fetchUserData();
+          setDislikedMenus([]);
+        }
+    }
+
+    verifyToken();
     }, [fetchUserData])
   );
 
