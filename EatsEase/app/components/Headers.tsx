@@ -55,6 +55,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
 
     const check = await checkToken(getToken);
     if (check === false) {
+      await clearStoredData(); // ลบ token ที่หมดอายุ
       handleSessionExpired(); // Token expired
     } else {
       setToken(getToken);
@@ -65,8 +66,15 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   // ✅ Handle Modal Close and Verify Token
   const handleModalClose = async () => {
     setAIModalVisible(false);
-    console.log('🔄 Modal closed. Verifying token...');
-    await verifyToken();
+  
+    if (tokenExpired) {
+      console.log('🔄 Token expired. Logging out...');
+      console.log(tokenExpired);
+      await handleLogout(); // เรียก handleLogout เพื่อไปยังหน้า Login
+    } else {
+      console.log('🔄 Modal closed. Verifying token...');
+      await verifyToken();
+    }
   };
 
   // ✅ Handle Session Expired
@@ -108,6 +116,41 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       setLoading(false);
     }
   };
+
+  // ✅ Handle Logout and Redirect
+  const handleLogout = async () => {
+    try {
+      // ลบ token ออกจาก SecureStore
+      await SecureStore.deleteItemAsync('token');
+      await SecureStore.deleteItemAsync('username');
+
+      // เรียก API เพื่อ logout
+      await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {
+        token: token,
+      });
+
+      // รีเซ็ต navigation stack และไปยังหน้า Login
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }], // หรือ 'Signup' ตามต้องการ
+      });
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
+    }
+  };
+
+  const clearStoredData = async () => {
+    try {
+      console.log('🧹 Clearing expired token and username...');
+      await SecureStore.deleteItemAsync('token');
+      await SecureStore.deleteItemAsync('username');
+      console.log('✅ Token and username cleared successfully.');
+    } catch (error) {
+      console.error('❌ Error clearing stored data:', error);
+    }
+  };
+  
+
 
   return (
     <>
