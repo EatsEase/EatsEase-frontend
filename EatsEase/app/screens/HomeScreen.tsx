@@ -26,6 +26,7 @@ const HomeScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [tokenExpired, setTokenExpired] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const fetchUserData = useCallback(async () => {
@@ -51,6 +52,12 @@ const HomeScreen: React.FC = () => {
     try {
       const token1 = await SecureStore.getItemAsync('token')
       const data = await homeScreenData(usernameParam, token1);
+      if (data?.token === "Token Expired"){
+        await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token1})
+        Alert.alert('Session Expired', 'Your session has expired. Please log in again.');
+        navigation.navigate('Login')
+        return;
+      }
       if (data && data.length > 0) {
         const transformedData: CardItem[] = data.map((item: any) => ({
           id: item._id,
@@ -64,7 +71,7 @@ const HomeScreen: React.FC = () => {
         setSampleCardArray([]);
       }
     } catch (error) {
-      console.error('Error fetching home screen data:', error);
+      console.log('Error fetching home screen data:', error.response.data.message);
     }
   };
 
@@ -91,13 +98,21 @@ const HomeScreen: React.FC = () => {
         setLikedMenus(updatedLikedMenus);
       }
     } catch (error) {
-      console.error('❌ Error fetching current liked menu:', error);
+      console.error('❌ Error fetching current liked menu:', error.response);
     }
   };
 
   const updateUserMenus = async (newLikedMenus: CardItem[], newDislikedMenu?: CardItem) => {
     if (!username) return;
     try {
+      const token2 = await SecureStore.getItemAsync("token")
+      const check = await checkToken(token2)
+      if (check === false){
+        await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token2})
+        Alert.alert('Session Expired', 'Your session has expired. Please log in again.');
+        navigation.navigate('Login')
+        return;
+      }
       if (newLikedMenus.length > 0) {
         const latestLikedMenu = newLikedMenus[newLikedMenus.length - 1].menuTitle;
         await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/liked/${username}`, { liked_menu: latestLikedMenu },
@@ -154,30 +169,49 @@ const HomeScreen: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
+      let isMounted = true;
+  
       const verifyToken = async () => {
         const getToken = await SecureStore.getItemAsync('token');
-        if (!getToken){
-            Alert.alert("Error", "No token found. Please log in again.");
-            navigation.navigate("Login");
-            return;
+  
+        if (!getToken) {
+          Alert.alert('Error', 'No token found. Please log in again.');
+          navigation.navigate('Login');
+          return; // ✅ Stop further execution
         }
-        setToken(getToken)
-        const check = await checkToken(getToken)
-        if (check == false){
-            Alert.alert("Error", "Token is expired. Please log in again.")
-            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token': token})
-            console.log(logout)
-            navigation.navigate("Login")
-            return;
+  
+        setToken(getToken);
+  
+        const check = await checkToken(getToken);
+        if (check === false) {
+          setTokenExpired(true);
+          console.log('⚠️ Token expired. Logging out...');
+          Alert.alert('Error', 'Token is expired. Please log in again.');
+  
+          // ✅ Correct logout API with headers
+          const logout = await axios.post(
+            `https://eatsease-backend-1jbu.onrender.com/api/user/logout`,
+            {'token': getToken},
+          );
+          console.log(logout);
+  
+          navigation.navigate('Login');
+          return; // ✅ Stop further execution
         }
-        if (check == true){
-          fetchUserData();
+  
+        if (check === true && isMounted) {
+          console.log('✅ Token is valid. Fetching user data...');
+          fetchUserData(); // ✅ Only fetch if valid token
           setDislikedMenus([]);
         }
-    }
-
-    verifyToken();
-    }, [token, fetchUserData])
+      };
+  
+      verifyToken();
+  
+      return () => {
+        isMounted = false; // ✅ Cleanup to prevent API call after navigation
+      };
+    }, [fetchUserData]) // ✅ Only depend on `fetchUserData` now
   );
 
   useEffect(() => {
@@ -187,7 +221,7 @@ const HomeScreen: React.FC = () => {
         updateLikedMenus: (newMenus: CardItem[]) => setLikedMenus(newMenus),
       });
     }
-  }, [likedMenusCount]);
+  }, [token, likedMenusCount]);
 
 
   return (
