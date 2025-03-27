@@ -77,14 +77,14 @@ const FirstPreferences = () => {
                 navigation.navigate("Login")
                 return;
             }
-            if (check == true){
+            if (check == true && token) {
                 initializeUserProfile();
                 fetchCategories();
             }
         }
 
         verifyToken();
-    }, []);
+    }, [token]);
 
     const toggleCategory = (category: string) => {
         setSelectedCategories(prevState =>

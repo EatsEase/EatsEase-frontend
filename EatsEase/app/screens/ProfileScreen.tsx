@@ -21,11 +21,12 @@ export default function ProfileScreen() {
       }
 
       console.log("Fetching profile for:", storedUsername);
+      const token1 = await SecureStore.getItemAsync('token')
 
       const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`,
         {
           headers: {
-            'authorization': token, // Replace token with your actual token variable
+            'authorization': token1, // Replace token with your actual token variable
             'Content-Type': 'application/json', // Example header; add others as needed
           }
         }
@@ -59,18 +60,20 @@ export default function ProfileScreen() {
               navigation.navigate("Login")
               return;
           }
-          if (check == true){
+          if (check == true && token){
             setLoading(true);
             fetchUserProfile();
           }
       }
 
       verifyToken();
-    }, [])
+    }, [token])
   );
 
   const handleLogout = async () => {
     try {
+      const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
+      console.log(logout)
       await SecureStore.deleteItemAsync('token');
       await SecureStore.deleteItemAsync('username');
 

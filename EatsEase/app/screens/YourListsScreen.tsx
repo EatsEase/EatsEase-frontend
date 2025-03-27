@@ -83,13 +83,13 @@ const YourListScreen: React.FC = () => {
               navigation.navigate("Login")
               return;
           }
-          if (check == true){
+          if (check == true && token){
             fetchUsernameAndMenus();
           }
       }
 
       verifyToken();
-    }, [])
+    }, [token])
   );
 
   // 🔹 ฟังก์ชันลบเมนูที่ชอบ

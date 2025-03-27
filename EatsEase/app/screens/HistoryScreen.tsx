@@ -39,13 +39,13 @@ const HistoryScreen = () => {
             navigation.navigate("Login")
             return;
         }
-        if (check == true){
+        if (check == true && token){
           fetchUsernameAndHistory();
         }
     }
 
     verifyToken();
-  }, []);
+  }, [token]);
 
   const fetchUsernameAndHistory = async () => {
     try {

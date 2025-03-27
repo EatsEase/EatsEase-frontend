@@ -98,14 +98,14 @@ const MapScreen: React.FC = () => {
             navigation.navigate("Login")
             return;
         }
-        if (check == true){
+        if (check == true && token){
           fetchUserLocation();
           fetchUsername();
         }
     }
 
     verifyToken();
-  }, []);
+  }, [token]);
   
   const fetchRestaurants = async () => {
     if (!userLocation || !username) {

@@ -116,13 +116,13 @@ export default function PreferencesScreen() {
             navigation.navigate("Login")
             return;
         }
-        if (check == true){
+        if (check == true && token){
           fetchData();
         }
     }
 
     verifyToken();
-  }, []);
+  }, [token]);
 
   const toggleCategory = (category: string) => {
     if (selectedCategories.includes(category)) {

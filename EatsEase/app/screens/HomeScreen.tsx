@@ -49,7 +49,8 @@ const HomeScreen: React.FC = () => {
 
   const fetchMenuData = async (usernameParam: string) => {
     try {
-      const data = await homeScreenData(usernameParam, token);
+      const token1 = await SecureStore.getItemAsync('token')
+      const data = await homeScreenData(usernameParam, token1);
       if (data && data.length > 0) {
         const transformedData: CardItem[] = data.map((item: any) => ({
           id: item._id,
@@ -69,10 +70,11 @@ const HomeScreen: React.FC = () => {
 
   const fetchCurrentLikedMenuCount = async (usernameParam: string) => {
     try {
+      const token1 = await SecureStore.getItemAsync('token')
       const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${usernameParam}`,
         {
           headers: {
-            'authorization': token, // Replace token with your actual token variable
+            'authorization': token1, // Replace token with your actual token variable
             'Content-Type': 'application/json', // Example header; add others as needed
           },
         }
@@ -175,7 +177,7 @@ const HomeScreen: React.FC = () => {
     }
 
     verifyToken();
-    }, [fetchUserData])
+    }, [token, fetchUserData])
   );
 
   useEffect(() => {
