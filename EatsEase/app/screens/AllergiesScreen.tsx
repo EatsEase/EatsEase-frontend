@@ -12,6 +12,7 @@ const AllergiesScreen = () => {
     const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [username, setUsername] = useState<string | null>(null);
+    const [token, setToken] = useState<string | null>(null);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -27,7 +28,14 @@ const AllergiesScreen = () => {
                 setUsername(storedUsername);
 
                 // Fetch user profile to get existing allergies
-                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`,
+                    {
+                        headers: {
+                            'authorization': token,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
                 console.log("User Profile Data:", response.data);
 
                 setSelectedAllergies(response.data.userProfile.allergies || []);
@@ -46,7 +54,7 @@ const AllergiesScreen = () => {
         const fetchAllergies = async () => {
             setLoading(true);
             try {
-                const data = await allergiesScreenData(); // Fetch allergy categories from API
+                const data = await allergiesScreenData(token); // Fetch allergy categories from API
                 const allergyNames = data.map((item: { allergy_name: string }) => item.allergy_name);
                 setAllergies(allergyNames);
             } catch (error) {
@@ -64,6 +72,7 @@ const AllergiesScreen = () => {
                 navigation.navigate("Login");
                 return;
             }
+            setToken(getToken)
             const check = await checkToken(getToken)
             if (check == false){
                 Alert.alert("Error", "Token is expired. Please log in again.")
@@ -97,7 +106,14 @@ const AllergiesScreen = () => {
 
         try {
             // First, get full user profile (so we don't overwrite other fields)
-            const userProfileResponse = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
+            const userProfileResponse = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`,
+                {
+                    headers: {
+                        'authorization': token,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
             const userId = userProfileResponse.data.userProfile._id; // Extract `_id`
             
             if (!userId) {
@@ -114,7 +130,14 @@ const AllergiesScreen = () => {
                 price_range: userProfileResponse.data.userProfile.price_range,
                 liked_menu: userProfileResponse.data.userProfile.liked_menu,
                 disliked_menu: userProfileResponse.data.userProfile.disliked_menu,
-            });
+            },
+            {
+                headers:{
+                    'authorization': token,
+                    'Content-Type': 'application/json',
+                }
+            }
+        );
 
             if (response.status === 200) {
                 Alert.alert("Success", "Allergies updated successfully!");

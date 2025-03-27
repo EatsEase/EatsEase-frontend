@@ -20,6 +20,7 @@ const HistoryScreen = () => {
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -29,10 +30,11 @@ const HistoryScreen = () => {
             navigation.navigate("Login");
             return;
         }
+        setToken(getToken)
         const check = await checkToken(getToken)
         if (check == false){
             Alert.alert("Error", "Token is expired. Please log in again.")
-            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token': token})
             console.log(logout)
             navigation.navigate("Login")
             return;
@@ -61,7 +63,14 @@ const HistoryScreen = () => {
 
   const fetchHistory = async (username: string) => {
     try {
-      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/history/${username}`);
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/history/${username}`,
+        {
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          },
+        }
+      );
       console.log("✅ Fetched History:", response.data);
 
       if (response.data.history_detail && response.data.history_detail.length > 0) {

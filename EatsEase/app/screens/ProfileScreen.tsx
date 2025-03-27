@@ -9,6 +9,7 @@ export default function ProfileScreen() {
   const navigation = useNavigation();
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [token, setToken] = useState<string | null>(null);
 
   const fetchUserProfile = async () => {
     try {
@@ -21,7 +22,14 @@ export default function ProfileScreen() {
 
       console.log("Fetching profile for:", storedUsername);
 
-      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`,
+        {
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          }
+        }
+      );
       console.log("User Profile Data:", response.data);
       setUserData(response.data);
     } catch (error) {
@@ -42,10 +50,11 @@ export default function ProfileScreen() {
               navigation.navigate("Login");
               return;
           }
+          setToken(getToken)
           const check = await checkToken(getToken)
           if (check == false){
               Alert.alert("Error", "Token is expired. Please log in again.")
-              const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+              const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
               console.log(logout)
               navigation.navigate("Login")
               return;

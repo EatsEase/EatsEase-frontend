@@ -15,6 +15,7 @@ const YourListScreen: React.FC = () => {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [menus, setMenus] = useState<CardItem[]>([]);
   const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const navigation = useNavigation();
 
   // 🔹 ฟังก์ชันดึงเมนูที่ชอบจาก backend
@@ -22,7 +23,13 @@ const YourListScreen: React.FC = () => {
     try {
       console.log("📥 Fetching liked menus...");
       const response = await axios.get(
-        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${username}`
+        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${username}`,
+        {
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          }
+        }
       );
 
       console.log("✅ Liked Menus Response:", response.data);
@@ -67,10 +74,11 @@ const YourListScreen: React.FC = () => {
               navigation.navigate("Login");
               return;
           }
+          setToken(getToken)
           const check = await checkToken(getToken)
           if (check == false){
               Alert.alert("Error", "Token is expired. Please log in again.")
-              const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+              const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
               console.log(logout)
               navigation.navigate("Login")
               return;
@@ -96,7 +104,12 @@ const YourListScreen: React.FC = () => {
 
       const response = await axios.delete(
         `https://eatsease-backend-1jbu.onrender.com/api/userProfile/currentLiked/${username}`,
-        { data: { menu_name: menu.menuTitle } }
+        { data: { menu_name: menu.menuTitle }, 
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          }
+      }
       );
 
       console.log("✅ DELETE Response:", response.data);
@@ -127,7 +140,13 @@ const YourListScreen: React.FC = () => {
   
       const response = await axios.post(
         `https://eatsease-backend-1jbu.onrender.com/api/userProfile/finalized/menu/${username}`,
-        { finalized_menu: finalizedMenu }
+        { finalized_menu: finalizedMenu },
+        {
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          }
+        }
       );
   
       console.log("✅ Finalized Menu Response:", response.data);

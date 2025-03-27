@@ -24,12 +24,15 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   const [recommendedMenu, setRecommendedMenu] = useState<{ name: string; image: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUsername = async () => {
       const storedUsername = await SecureStore.getItemAsync('username');
+      const storedToken = await SecureStore.getItemAsync('token');
       if (storedUsername) {
         setUsername(storedUsername);
+        setToken(storedToken)
       }
     };
     fetchUsername();
@@ -45,6 +48,10 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       setLoading(true);
       const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/recommendation/next_meal/${username}`, {
         timeout: 10000, // Timeout 10s
+        headers: {
+          'authorization': token,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.data) {

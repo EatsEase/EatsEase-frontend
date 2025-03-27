@@ -19,21 +19,21 @@ const FirstPreferences = () => {
             try {
                 // Get the stored username correctly
                 const storedUsername = await SecureStore.getItemAsync('username');
-                const storedToken = await SecureStore.getItemAsync('token');
                 if (!storedUsername) {
                     Alert.alert("Error", "No username found. Please log in again.");
                     navigation.navigate("Login");
                     return;
                 }
-                if (!token){
-                    Alert.alert("Error", "No username found. Please log in again.");
-                    navigation.navigate("Login");
-                }
                 setUsername(storedUsername); // Store username in state
-                setToken(storedToken)
 
                 // Check if user profile exists
-                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`, {headers: {authorization: token}});
+                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`,
+                {
+                    headers: {
+                        'authorization': token,
+                        'Content-Type': 'application/json',
+                    }
+                });
 
                 console.log("User Profile Data:", response.data);
 
@@ -47,7 +47,10 @@ const FirstPreferences = () => {
 
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/category/all', {headers: {authorization: token}});
+                const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/category/all', { headers: {
+                    'authorization': token,
+                    'Content-Type': 'application/json',
+                }});
                 const categoryNames = response.data.map((item: { category_name: string }) => item.category_name);
                 setCategories(categoryNames);
             } catch (error) {
@@ -65,10 +68,11 @@ const FirstPreferences = () => {
                 navigation.navigate("Login");
                 return;
             }
+            setToken(getToken)
             const check = await checkToken(getToken)
             if (check == false){
                 Alert.alert("Error", "Token is expired. Please log in again.")
-                const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+                const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
                 console.log(logout)
                 navigation.navigate("Login")
                 return;
@@ -102,13 +106,17 @@ const FirstPreferences = () => {
         }
 
         try {
-            // Ensure user profile exists before updating
-            await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
-
             // PUT request to update food_preferences
             const response = await axios.put(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`, {
                 food_preferences: selectedCategories, // Update food preferences
-            });
+            },
+            {
+                headers:{
+                    'authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
 
             if (response.status === 200) {
                 Alert.alert("Success", "Preferences updated successfully!");
