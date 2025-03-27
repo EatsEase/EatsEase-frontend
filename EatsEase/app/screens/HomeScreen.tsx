@@ -53,6 +53,7 @@ const HomeScreen: React.FC = () => {
       const token1 = await SecureStore.getItemAsync('token')
       const data = await homeScreenData(usernameParam, token1);
       if (data?.token === "Token Expired"){
+        setTokenExpired(true)
         await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token1})
         Alert.alert('Session Expired', 'Your session has expired. Please log in again.');
         navigation.navigate('Login')
@@ -108,6 +109,7 @@ const HomeScreen: React.FC = () => {
       const token2 = await SecureStore.getItemAsync("token")
       const check = await checkToken(token2)
       if (check === false){
+        setTokenExpired(true)
         await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token2})
         Alert.alert('Session Expired', 'Your session has expired. Please log in again.');
         navigation.navigate('Login')
@@ -156,13 +158,24 @@ const HomeScreen: React.FC = () => {
     }
     removeCard(item.id);
   };
-
-  const removeCard = (id: string) => {
+  const removeCard = async (id: string) => {
     setSampleCardArray((prev) => {
       const updatedArray = prev.filter((item) => item.id !== id);
+  
+      // ✅ Check token only if the array is empty
       if (updatedArray.length === 0 && !loading) {
-        fetchUserData();
+  
+        // ✅ Check token before fetching new data
+        SecureStore.getItemAsync('token').then(async (token1) => {
+          const check = await checkToken(token1);
+          if (check === false) {
+            console.log('⚠️ Token expired. Skipping fetch...');
+            return; // ✅ Skip fetching if token expired
+          }
+          fetchUserData()
+        });
       }
+  
       return updatedArray;
     });
   };

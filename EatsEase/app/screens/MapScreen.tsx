@@ -165,16 +165,24 @@ const MapScreen: React.FC = () => {
     if (!selectedRestaurant || !username) return;
 
     try {
-      const response = await axios.post(
-        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/finalized/restaurant/${username}`,
-        { finalized_restaurant: selectedRestaurant.restaurant_name },
-        {
-          headers: {
-            'authorization': token, // Replace token with your actual token variable
-            'Content-Type': 'application/json', // Example header; add others as needed
-          }
+        const getToken = await SecureStore.getItemAsync('token');
+        const check = await checkToken(getToken)
+        if (check == false){
+            Alert.alert("Error", "Token is expired. Please log in again.")
+            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+            navigation.navigate("Login")
+            return;
         }
-      );
+        const response = await axios.post(
+          `https://eatsease-backend-1jbu.onrender.com/api/userProfile/finalized/restaurant/${username}`,
+          { finalized_restaurant: selectedRestaurant.restaurant_name },
+          {
+            headers: {
+              'authorization': token, // Replace token with your actual token variable
+              'Content-Type': 'application/json', // Example header; add others as needed
+            }
+          }
+        );
 
       console.log("✅ Finalized Response:", response.data);
 
