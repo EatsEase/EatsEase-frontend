@@ -4,12 +4,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
+import { checkToken } from "../services/checkToken";
 
 const FirstPreferences = () => {
     const [categories, setCategories] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [username, setUsername] = useState<string | null>(null);
+    const [token, setToken] = useState<string | null>(null);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -25,7 +27,14 @@ const FirstPreferences = () => {
                 setUsername(storedUsername); // Store username in state
 
                 // Check if user profile exists
-                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+                const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`,
+                {
+                    headers: {
+                        'authorization': token,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
                 console.log("User Profile Data:", response.data);
 
                 // Set existing food preferences
@@ -33,30 +42,15 @@ const FirstPreferences = () => {
             } catch (error) {
                 console.error("Error fetching user profile:", error);
 
-                if (error.response?.status === 404) {
-                    console.log("User profile not found. Creating new profile...");
-
-                    // Create user profile if not found
-                    await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/userProfile`, {
-                        user_name: username,
-                        food_preferences: [],
-                        allergies: [],
-                        liked_menu: [],
-                        disliked_menu: [],
-                        distance_in_km_preference: "5 km",
-                        price_range: "฿",
-                    });
-
-                    console.log("User profile created successfully!");
-                } else {
-                    Alert.alert("Error", "Failed to fetch user profile.");
-                }
             }
         };
 
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/category/all');
+                const response = await axios.get('https://eatsease-backend-1jbu.onrender.com/api/category/all', { headers: {
+                    'authorization': token,
+                    'Content-Type': 'application/json',
+                }});
                 const categoryNames = response.data.map((item: { category_name: string }) => item.category_name);
                 setCategories(categoryNames);
             } catch (error) {
@@ -67,9 +61,30 @@ const FirstPreferences = () => {
             }
         };
 
-        initializeUserProfile();
-        fetchCategories();
-    }, []);
+        const verifyToken = async () => {
+            const getToken = await SecureStore.getItemAsync('token');
+            if (!getToken){
+                Alert.alert("Error", "No token found. Please log in again.");
+                navigation.navigate("Login");
+                return;
+            }
+            setToken(getToken)
+            const check = await checkToken(getToken)
+            if (check == false){
+                Alert.alert("Error", "Token is expired. Please log in again.")
+                const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
+                console.log(logout)
+                navigation.navigate("Login")
+                return;
+            }
+            if (check == true && token) {
+                initializeUserProfile();
+                fetchCategories();
+            }
+        }
+
+        verifyToken();
+    }, [token]);
 
     const toggleCategory = (category: string) => {
         setSelectedCategories(prevState =>
@@ -91,13 +106,17 @@ const FirstPreferences = () => {
         }
 
         try {
-            // Ensure user profile exists before updating
-            await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${username}`);
-
             // PUT request to update food_preferences
             const response = await axios.put(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`, {
                 food_preferences: selectedCategories, // Update food preferences
-            });
+            },
+            {
+                headers:{
+                    'authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
 
             if (response.status === 200) {
                 Alert.alert("Success", "Preferences updated successfully!");

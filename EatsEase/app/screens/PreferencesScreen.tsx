@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import Header from "../components/Headers";
+import { checkToken } from "../services/checkToken";
 
 export default function PreferencesScreen() {
   const navigation = useNavigation();
@@ -15,6 +16,7 @@ export default function PreferencesScreen() {
   const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   const distances = ["3 km", "5 km", "7 km", "10 km"];
   const priceMapping: { [key: string]: string } = {
@@ -49,17 +51,38 @@ export default function PreferencesScreen() {
         setUsername(storedUsername);
 
         // Fetch categories
-        const categoryRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/category/all");
+        const categoryRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/category/all",
+          {
+            headers: {
+              'authorization': token, // Replace token with your actual token variable
+              'Content-Type': 'application/json', // Example header; add others as needed
+            }
+          }
+        );
         const categoryNames = categoryRes.data.map((item: { category_name: string }) => item.category_name);
         setCategories(categoryNames);
 
         // Fetch allergies
-        const allergyRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/allergies/all");
+        const allergyRes = await axios.get("https://eatsease-backend-1jbu.onrender.com/api/allergies/all",
+          {
+            headers: {
+              'authorization': token, // Replace token with your actual token variable
+              'Content-Type': 'application/json', // Example header; add others as needed
+            }
+          }
+        );
         const allergyNames = allergyRes.data.map((item: { allergy_name: string }) => item.allergy_name);
         setAllergies(allergyNames);
 
         // Fetch user profile
-        const profileRes = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+        const profileRes = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`,
+          {
+            headers: {
+              'authorization': token, // Replace token with your actual token variable
+              'Content-Type': 'application/json', // Example header; add others as needed
+            }
+          }
+        );
         const userProfile = profileRes.data.userProfile;
 
         setSelectedCategories(userProfile.food_preferences || []);
@@ -77,9 +100,29 @@ export default function PreferencesScreen() {
         setLoading(false);
       }
     };
+      const verifyToken = async () => {
+        const getToken = await SecureStore.getItemAsync('token');
+        if (!getToken){
+            Alert.alert("Error", "No token found. Please log in again.");
+            navigation.navigate("Login");
+            return;
+        }
+        setToken(getToken)
+        const check = await checkToken(getToken)
+        if (check == false){
+            Alert.alert("Error", "Token is expired. Please log in again.")
+            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
+            console.log(logout)
+            navigation.navigate("Login")
+            return;
+        }
+        if (check == true && token){
+          fetchData();
+        }
+    }
 
-    fetchData();
-  }, []);
+    verifyToken();
+  }, [token]);
 
   const toggleCategory = (category: string) => {
     if (selectedCategories.includes(category)) {
@@ -126,7 +169,14 @@ export default function PreferencesScreen() {
 
       console.log("Updating user preferences:", requestBody);
 
-      await axios.put(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`, requestBody);
+      await axios.put(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/edit/${username}`, requestBody,
+        {
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          }
+        }
+      );
 
       Alert.alert("Success", "Preferences updated successfully!");
       console.log("Preferences updated successfully", requestBody);

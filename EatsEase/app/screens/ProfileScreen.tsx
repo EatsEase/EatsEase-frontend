@@ -3,11 +3,13 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, ActivityIndicator, Ale
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
+import { checkToken } from "../services/checkToken";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [token, setToken] = useState<string | null>(null);
 
   const fetchUserProfile = async () => {
     try {
@@ -19,8 +21,16 @@ export default function ProfileScreen() {
       }
 
       console.log("Fetching profile for:", storedUsername);
+      const token1 = await SecureStore.getItemAsync('token')
 
-      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`);
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/userProfile/${storedUsername}`,
+        {
+          headers: {
+            'authorization': token1, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          }
+        }
+      );
       console.log("User Profile Data:", response.data);
       setUserData(response.data);
     } catch (error) {
@@ -34,13 +44,36 @@ export default function ProfileScreen() {
     // ✅ Use useFocusEffect to refresh data every time the screen is visited
   useFocusEffect(
     useCallback(() => {
-      setLoading(true);
-      fetchUserProfile();
-    }, [])
+        const verifyToken = async () => {
+          const getToken = await SecureStore.getItemAsync('token');
+          if (!getToken){
+              Alert.alert("Error", "No token found. Please log in again.");
+              navigation.navigate("Login");
+              return;
+          }
+          setToken(getToken)
+          const check = await checkToken(getToken)
+          if (check == false){
+              Alert.alert("Error", "Token is expired. Please log in again.")
+              const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
+              console.log(logout)
+              navigation.navigate("Login")
+              return;
+          }
+          if (check == true && token){
+            setLoading(true);
+            fetchUserProfile();
+          }
+      }
+
+      verifyToken();
+    }, [token])
   );
 
   const handleLogout = async () => {
     try {
+      const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':token})
+      console.log(logout)
       await SecureStore.deleteItemAsync('token');
       await SecureStore.deleteItemAsync('username');
 

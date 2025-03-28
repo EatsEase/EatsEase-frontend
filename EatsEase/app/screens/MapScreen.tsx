@@ -7,6 +7,7 @@ import axios from 'axios';
 import * as Location from 'expo-location'; // 🆕 Import Location API
 import Modal from 'react-native-modal';
 import Header from '../components/Headers';
+import { checkToken } from '../services/checkToken';
 
 interface Restaurant {
   id: string;
@@ -27,6 +28,7 @@ const MapScreen: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [confirmedData, setConfirmedData] = useState<{ menu_name: string; restaurant_name: string; restaurant_location: string; restaurant_location_link: string; date: string } | null>(null);
@@ -80,9 +82,30 @@ const MapScreen: React.FC = () => {
   };
   
   useEffect(() => {
-    fetchUserLocation();
-    fetchUsername();
-  }, []);
+      const verifyToken = async () => {
+        const getToken = await SecureStore.getItemAsync('token');
+        if (!getToken){
+            Alert.alert("Error", "No token found. Please log in again.");
+            navigation.navigate("Login");
+            return;
+        }
+        setToken(getToken)
+        const check = await checkToken(getToken)
+        if (check == false){
+            Alert.alert("Error", "Token is expired. Please log in again.")
+            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+            console.log(logout)
+            navigation.navigate("Login")
+            return;
+        }
+        if (check == true && token){
+          fetchUserLocation();
+          fetchUsername();
+        }
+    }
+
+    verifyToken();
+  }, [token]);
   
   const fetchRestaurants = async () => {
     if (!userLocation || !username) {
@@ -97,6 +120,12 @@ const MapScreen: React.FC = () => {
           user_name: username,
           user_lat: userLocation.lat,
           user_long: userLocation.long
+        },
+        {
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          }
         }
       );
 
@@ -136,10 +165,24 @@ const MapScreen: React.FC = () => {
     if (!selectedRestaurant || !username) return;
 
     try {
-      const response = await axios.post(
-        `https://eatsease-backend-1jbu.onrender.com/api/userProfile/finalized/restaurant/${username}`,
-        { finalized_restaurant: selectedRestaurant.restaurant_name }
-      );
+        const getToken = await SecureStore.getItemAsync('token');
+        const check = await checkToken(getToken)
+        if (check == false){
+            Alert.alert("Error", "Token is expired. Please log in again.")
+            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token':getToken})
+            navigation.navigate("Login")
+            return;
+        }
+        const response = await axios.post(
+          `https://eatsease-backend-1jbu.onrender.com/api/userProfile/finalized/restaurant/${username}`,
+          { finalized_restaurant: selectedRestaurant.restaurant_name },
+          {
+            headers: {
+              'authorization': token, // Replace token with your actual token variable
+              'Content-Type': 'application/json', // Example header; add others as needed
+            }
+          }
+        );
 
       console.log("✅ Finalized Response:", response.data);
 

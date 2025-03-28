@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
+import { View, StyleSheet, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, Image, Alert } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Header from "../components/Headers";
+import { checkToken } from '../services/checkToken';
 
 interface HistoryItem {
   menu_name: string;
@@ -19,10 +20,32 @@ const HistoryScreen = () => {
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUsernameAndHistory();
-  }, []);
+    const verifyToken = async () => {
+        const getToken = await SecureStore.getItemAsync('token');
+        if (!getToken){
+            Alert.alert("Error", "No token found. Please log in again.");
+            navigation.navigate("Login");
+            return;
+        }
+        setToken(getToken)
+        const check = await checkToken(getToken)
+        if (check == false){
+            Alert.alert("Error", "Token is expired. Please log in again.")
+            const logout = await axios.post(`https://eatsease-backend-1jbu.onrender.com/api/user/logout`, {'token': token})
+            console.log(logout)
+            navigation.navigate("Login")
+            return;
+        }
+        if (check == true && token){
+          fetchUsernameAndHistory();
+        }
+    }
+
+    verifyToken();
+  }, [token]);
 
   const fetchUsernameAndHistory = async () => {
     try {
@@ -40,7 +63,14 @@ const HistoryScreen = () => {
 
   const fetchHistory = async (username: string) => {
     try {
-      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/history/${username}`);
+      const response = await axios.get(`https://eatsease-backend-1jbu.onrender.com/api/history/${username}`,
+        {
+          headers: {
+            'authorization': token, // Replace token with your actual token variable
+            'Content-Type': 'application/json', // Example header; add others as needed
+          },
+        }
+      );
       console.log("✅ Fetched History:", response.data);
 
       if (response.data.history_detail && response.data.history_detail.length > 0) {
