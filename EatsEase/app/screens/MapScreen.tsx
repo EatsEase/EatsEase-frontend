@@ -21,6 +21,7 @@ interface Restaurant {
   restaurant_image: string;
   restaurant_menu: string[];
   restaurant_location_link: string;
+  distance: number;
 }
 
 const MapScreen: React.FC = () => {
@@ -32,7 +33,6 @@ const MapScreen: React.FC = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [confirmedData, setConfirmedData] = useState<{ menu_name: string; restaurant_name: string; restaurant_location: string; restaurant_location_link: string; date: string } | null>(null);
-  const distances = ["3 km", "5 km", "7 km", "10 km"];
   const priceMapping: { [key: string]: string } = {
     "฿": "<100",
     "฿฿": "100+",
