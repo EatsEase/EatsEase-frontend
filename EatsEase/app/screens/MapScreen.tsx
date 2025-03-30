@@ -143,6 +143,7 @@ const MapScreen: React.FC = () => {
         restaurant_image: item.restaurant_image,
         restaurant_menu: item.restaurant_menu,
         restaurant_location_link: item.restaurant_location_link,
+        distance: item.distance
       }));
         
 
@@ -256,7 +257,7 @@ const MapScreen: React.FC = () => {
                     <Text style={styles.calloutText}>📍 {restaurant.restaurant_location}</Text>
                     <Text style={styles.calloutText}>💰 ราคา: {priceMapping[restaurant.restaurant_price_range] || "ไม่ระบุ"}</Text>
                     <Text style={styles.calloutText}>⭐️ ความนิยม: {restaurant.restaurant_rating.toFixed(1)}</Text>
-                    <Text style={styles.calloutText}>🚶🏻‍♂️ ระยะทาง: {distances[index]}</Text>
+                    <Text style={styles.calloutText}>🚶🏻‍♂️ ระยะทาง: {restaurant.distance} km</Text>
                   </View>
 
                   {/* Right Side - Image */}
