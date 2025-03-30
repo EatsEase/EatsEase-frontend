@@ -21,6 +21,7 @@ interface Restaurant {
   restaurant_image: string;
   restaurant_menu: string[];
   restaurant_location_link: string;
+  distance: number;
 }
 
 const MapScreen: React.FC = () => {
@@ -32,7 +33,6 @@ const MapScreen: React.FC = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [confirmedData, setConfirmedData] = useState<{ menu_name: string; restaurant_name: string; restaurant_location: string; restaurant_location_link: string; date: string } | null>(null);
-  const distances = ["3 km", "5 km", "7 km", "10 km"];
   const priceMapping: { [key: string]: string } = {
     "฿": "<100",
     "฿฿": "100+",
@@ -143,6 +143,7 @@ const MapScreen: React.FC = () => {
         restaurant_image: item.restaurant_image,
         restaurant_menu: item.restaurant_menu,
         restaurant_location_link: item.restaurant_location_link,
+        distance: item.distance
       }));
         
 
@@ -256,7 +257,7 @@ const MapScreen: React.FC = () => {
                     <Text style={styles.calloutText}>📍 {restaurant.restaurant_location}</Text>
                     <Text style={styles.calloutText}>💰 ราคา: {priceMapping[restaurant.restaurant_price_range] || "ไม่ระบุ"}</Text>
                     <Text style={styles.calloutText}>⭐️ ความนิยม: {restaurant.restaurant_rating.toFixed(1)}</Text>
-                    <Text style={styles.calloutText}>🚶🏻‍♂️ ระยะทาง: {distances[index]}</Text>
+                    <Text style={styles.calloutText}>🚶🏻‍♂️ ระยะทาง: {restaurant.distance} km</Text>
                   </View>
 
                   {/* Right Side - Image */}
