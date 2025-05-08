@@ -3,7 +3,6 @@
 1. Clone the repository:
    ```bash
    git clone
-    cd EatsEase
     ```
 
 2. Install npm dependencies:
