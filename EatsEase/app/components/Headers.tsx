@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: width * 0.8,
+    width: width * 0.9,
     backgroundColor: 'white',
     borderRadius: 25,
     padding: 20,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '90%',
+    width: '100%',
     marginTop: -15,
   },
   refreshButton: {

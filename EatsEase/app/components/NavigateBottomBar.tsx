@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         top: 5,
-        width: 35,
+        width: 40,
         height: 32,
         resizeMode: 'contain',
         marginBottom: 6,
